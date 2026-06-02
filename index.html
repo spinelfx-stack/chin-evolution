@@ -143,6 +143,38 @@ body{
 .name-save{font-size:.75rem;padding:.22rem .65rem;border:none;border-radius:999px;
   background:#ff66aa;color:#fff;cursor:pointer;font-family:inherit}
 
+/* ── 進化ボタン ── */
+.evolve-ready-row{text-align:center;margin:.25rem 0;animation:evolveGlow 1.5s infinite}
+@keyframes evolveGlow{0%,100%{opacity:1}50%{opacity:.7}}
+.btn-evolve{background:linear-gradient(135deg,#ff44cc,#aa0088);color:#fff;
+  font-size:1rem;padding:.5rem 1.4rem;box-shadow:0 4px 16px rgba(255,0,180,.5)}
+.evolve-hint{font-size:.7rem;color:#ff88cc;margin-top:.15rem}
+
+/* ── サマリー ── */
+.btn-summary{background:linear-gradient(135deg,#4488cc,#115599);color:#fff;box-shadow:0 3px 10px rgba(0,80,180,.4)}
+.sum-modal{background:#0a0a1a;border-radius:18px;padding:1rem;max-width:340px;width:95%;
+  box-shadow:0 12px 48px rgba(0,0,0,.5);margin:auto;color:#ccddeeff}
+.sum-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
+.sum-title{font-size:1.1rem;font-weight:bold;color:#88aaff}
+.sum-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.3rem 0;border-bottom:1px solid #1a1a3a;font-size:.82rem}
+.sum-row:last-child{border-bottom:none}
+.sum-label{color:#8899bb}
+.sum-val{color:#eeeeff;font-weight:bold}
+
+/* ── 管理者モード ── */
+.admin-tap{position:fixed;top:0;right:0;width:55px;height:55px;z-index:9999;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
+.admin-modal{background:#1a0a00;border-radius:18px;padding:1rem;max-width:300px;width:92%;
+  box-shadow:0 12px 48px rgba(255,80,0,.3);margin:auto;color:#ffccaa}
+.admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
+.admin-title{font-size:1rem;font-weight:bold;color:#ff8844}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.3rem}
+.btn-admin-action{padding:.45rem;font-size:.78rem;border:none;border-radius:10px;
+  background:#2a1500;color:#ffaa66;cursor:pointer;font-family:inherit;text-align:center;border:1px solid #553300}
+.btn-admin-action:hover{background:#3a2000}
+.admin-stage-sel{width:100%;padding:.35rem;font-size:.82rem;border-radius:8px;
+  background:#2a1500;color:#ffaa66;border:1px solid #553300;font-family:inherit;margin-top:.3rem}
+
 /* ── NPC対戦 ── */
 .btn-battle{background:linear-gradient(135deg,#ff5533,#cc2200);color:#fff;box-shadow:0 3px 10px rgba(220,80,0,.4)}
 .b-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;
@@ -207,6 +239,10 @@ body{
 </div>
 
 <div class="stat-row" id="statRow"></div>
+<div id="evolveReadyRow" class="evolve-ready-row hidden">
+  <button class="btn btn-evolve" id="btnEvolve">✨ 進化できます！ タップで進化</button>
+  <div class="evolve-hint" id="evolveHint"></div>
+</div>
 <div class="count-display">ぺちぺち: <span id="countEl">0</span>回</div>
 <div class="hint">タップ / クリックでぺちぺち</div>
 
@@ -221,12 +257,56 @@ body{
   <button class="btn btn-zukan" id="btnZukan">📖 図鑑</button>
   <button class="btn btn-battle" id="btnBattle">⚔️ 対戦</button>
   <button class="btn btn-train" id="btnTrain">💪 訓練<span class="train-badge hidden" id="trainBadge">!</span></button>
+  <button class="btn btn-summary" id="btnSummary">📊 サマリー</button>
 </div>
 
 <div class="reincarn-row" id="reincarnRow">
   <button class="btn btn-reincarn" id="btnReincarn">🔄 転生する</button>
   <div class="reincarn-info" id="reincarnInfo"></div>
 </div>
+
+<!-- サマリーモーダル -->
+<div class="modal-overlay hidden" id="sumOverlay">
+  <div class="sum-modal">
+    <div class="sum-header">
+      <div class="sum-title">📊 サマリー</div>
+      <button class="modal-close" id="sumClose">✕</button>
+    </div>
+    <div id="sumBody"></div>
+  </div>
+</div>
+
+<!-- 管理者モードモーダル -->
+<div class="modal-overlay hidden" id="adminOverlay">
+  <div class="admin-modal">
+    <div class="admin-header">
+      <div class="admin-title">🔧 管理者モード</div>
+      <button class="modal-close" id="adminClose" style="background:#2a1500;color:#ffaa66">✕</button>
+    </div>
+    <div class="admin-grid">
+      <button class="btn-admin-action" id="adminUnlockAll">📖 全フォーム解放</button>
+      <button class="btn-admin-action" id="adminMaxTrain">💪 訓練+50pt</button>
+      <button class="btn-admin-action" id="adminPechi1000">👆 +1000ぺちぺち</button>
+      <button class="btn-admin-action" id="adminReincarn1">🔄 転生+1</button>
+    </div>
+    <select class="admin-stage-sel" id="adminStageSel">
+      <option value="">ステージ変更...</option>
+      <option value="0">Stage 0 (たまご)</option>
+      <option value="1">Stage 1 (ちびちん)</option>
+      <option value="2">Stage 2 (ふつうちん)</option>
+      <option value="3">Stage 3 (デカちん)</option>
+      <option value="4">Stage 4 (マッチョちん)</option>
+      <option value="5">Stage 5 (スーパーちん)</option>
+      <option value="6">Stage 6 (ゴールデンちん)</option>
+      <option value="7">Stage 7 (神ちん)</option>
+      <option value="8">Stage 8 (伝説ちん)</option>
+      <option value="9">Stage 9 (レインボーちん)</option>
+    </select>
+  </div>
+</div>
+
+<!-- 管理者タップエリア（不可視） -->
+<div class="admin-tap" id="adminTap"></div>
 
 <!-- トレーニングモーダル -->
 <div class="t-overlay hidden" id="trainOverlay">
@@ -690,6 +770,9 @@ let reincarnations=+( localStorage.getItem('chin_rei')||'0');
 let reincarnBonusPct=+( localStorage.getItem('chin_bonus')||'0');
 let discovered=new Set(JSON.parse(localStorage.getItem('chin_disc')||'[]'));
 let autoTimer=null;
+let canEvolve=false;
+let totalManualPechis=+(localStorage.getItem('chin_manual')||'0');
+let totalAutoPechis=+(localStorage.getItem('chin_auto')||'0');
 
 function saveAll(){
   localStorage.setItem('chin_disc',JSON.stringify([...discovered]));
@@ -728,6 +811,15 @@ const charG=document.getElementById('charG');
 const stageArea=document.getElementById('stageArea');
 
 function applyForm(f,withAnim){
+  // 訓練カウントを新フォームへ引き継ぎ
+  const oldId=currentForm?currentForm.id:null;
+  if(oldId&&oldId!==f.id){
+    trainCount[f.id]=(trainCount[f.id]||0)+(trainCount[oldId]||0);
+    pendingPts[f.id]=(pendingPts[f.id]||0)+(pendingPts[oldId]||0);
+    trainCount[oldId]=0; pendingPts[oldId]=0;
+    localStorage.setItem('chin_tcount',JSON.stringify(trainCount));
+    localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+  }
   charG.innerHTML=renderForm(f);
   if(withAnim){
     charEl.classList.remove('wiggle','evolving');
@@ -750,14 +842,22 @@ function updateUI(){
   document.getElementById('formName').innerHTML=currentForm.name+rarLabel;
   document.getElementById('formName').style.color=currentForm.stroke||'#ff4488';
 
-  if(si<9){
+  const evolveRow=document.getElementById('evolveReadyRow');
+  if(canEvolve&&si<9){
+    document.getElementById('nextInfo').textContent='';
+    document.getElementById('progBar').style.width='100%';
+    evolveRow.classList.remove('hidden');
+    document.getElementById('evolveHint').textContent=`Stage${si} → Stage${si+1} (${STAGE_NAMES[si+1]}) へ進化可能`;
+  } else if(si<9){
     const rem=THRESHOLDS[si+1]-count;
     const pct=(count-THRESHOLDS[si])/(THRESHOLDS[si+1]-THRESHOLDS[si])*100;
     document.getElementById('nextInfo').textContent=`あと${rem}回で進化！`;
     document.getElementById('progBar').style.width=Math.min(100,pct)+'%';
+    evolveRow.classList.add('hidden');
   } else {
     document.getElementById('nextInfo').textContent='🏆 最強形態！';
     document.getElementById('progBar').style.width='100%';
+    evolveRow.classList.add('hidden');
   }
   document.getElementById('countEl').textContent=count;
 
@@ -795,7 +895,7 @@ function showBanner(msg){
   document.body.appendChild(el);
   setTimeout(()=>el.remove(),2600);
 }
-function pechipechi(x,y){
+function pechipechi(x,y,isAuto=false){
   charEl.classList.remove('wiggle','evolving');
   void charEl.offsetWidth;
   charEl.classList.add('wiggle');
@@ -804,15 +904,27 @@ function pechipechi(x,y){
   for(let i=0;i<n;i++) setTimeout(()=>spawnText(x+(Math.random()-.5)*40,y),i*80);
   count++;
   addTrainPechi();
-  const newSi=getStageIdxFor(count);
-  if(newSi>currentStageIdx){
-    currentStageIdx=newSi;
-    const f=pickForm(newSi);
-    applyForm(f,true);
-    setTimeout(()=>showBanner(`✨ ${f.name} に進化！`),350);
+  // 手動/オート累計
+  if(isAuto){ totalAutoPechis++; localStorage.setItem('chin_auto',String(totalAutoPechis)); }
+  else { totalManualPechis++; localStorage.setItem('chin_manual',String(totalManualPechis)); }
+  // 進化閾値チェック（自動進化しない）
+  if(!canEvolve && currentStageIdx<9 && count>=THRESHOLDS[currentStageIdx+1]){
+    canEvolve=true;
   }
   updateUI();
 }
+
+// 進化ボタン
+document.getElementById('btnEvolve').addEventListener('click',()=>{
+  if(!canEvolve) return;
+  canEvolve=false;
+  const newSi=currentStageIdx+1;
+  currentStageIdx=newSi;
+  const f=pickForm(newSi);
+  applyForm(f,true);
+  setTimeout(()=>showBanner(`✨ ${f.name} に進化！`),350);
+  updateUI();
+});
 
 // 転生
 document.getElementById('btnReincarn').addEventListener('click',()=>{
@@ -843,7 +955,7 @@ btnAuto.addEventListener('click',()=>{
   else {
     const rect=stageArea.getBoundingClientRect();
     const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
-    autoTimer=setInterval(()=>pechipechi(cx,cy),+speedSel.value);
+    autoTimer=setInterval(()=>pechipechi(cx,cy,true),+speedSel.value);
     btnAuto.textContent='⏹ ストップ'; btnAuto.classList.add('on');
   }
 });
@@ -852,7 +964,7 @@ speedSel.addEventListener('change',()=>{ if(autoTimer){ btnAuto.click(); btnAuto
 document.getElementById('btnReset').addEventListener('click',()=>{
   if(!confirm('ぺちぺち回数と進化をリセットします。\n図鑑・転生ボーナスは保持されます。')) return;
   if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnAuto.textContent='▶ オート'; btnAuto.classList.remove('on'); }
-  count=0; currentStageIdx=0;
+  count=0; currentStageIdx=0; canEvolve=false;
   const f=FORMS[0]; applyForm(f,false);
   document.body.style.background=`linear-gradient(135deg,${f.bg[0]} 0%,${f.bg[1]} 100%)`;
   updateUI();
@@ -905,6 +1017,80 @@ function renderZukan(){
     body.appendChild(grid);
   }
 }
+
+// ── サマリー ──
+function renderSummary(){
+  const es=getEffectiveStats(currentForm);
+  const esTotal=Object.values(es).reduce((a,b)=>a+b,0);
+  const tb=getTBonus(currentForm.id);
+  const tbTotal=Object.values(tb).reduce((a,b)=>a+b,0);
+  const spDisc=FORMS.filter(f=>f.rar==='SP'&&discovered.has(f.id)).length;
+  const rows=[
+    ['手動ぺちぺち累計', totalManualPechis.toLocaleString()+'回'],
+    ['オートぺちぺち累計', totalAutoPechis.toLocaleString()+'回'],
+    ['合計ぺちぺち', (totalManualPechis+totalAutoPechis).toLocaleString()+'回'],
+    ['現在のぺちぺち数', count.toLocaleString()+'回'],
+    ['発見フォーム', discovered.size+' / '+FORMS.length+' 種'],
+    ['特殊(SP)フォーム発見', spDisc+' / '+FORMS.filter(f=>f.rar==='SP').length+' 種'],
+    ['転生回数', reincarnations+'回'],
+    ['転生ボーナス', '+'+reincarnBonusPct.toFixed(1)+'%'],
+    ['訓練ボーナス(現フォーム)', '+'+tbTotal],
+    ['現在ステータス合計', esTotal],
+    ['バトル戦績', battleWins+'勝 '+battleLosses+'敗'],
+  ];
+  document.getElementById('sumBody').innerHTML=rows.map(([l,v])=>
+    `<div class="sum-row"><span class="sum-label">${l}</span><span class="sum-val">${v}</span></div>`
+  ).join('');
+}
+document.getElementById('btnSummary').addEventListener('click',()=>{
+  renderSummary();
+  document.getElementById('sumOverlay').classList.remove('hidden');
+});
+document.getElementById('sumClose').addEventListener('click',()=>document.getElementById('sumOverlay').classList.add('hidden'));
+document.getElementById('sumOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('sumOverlay')) document.getElementById('sumOverlay').classList.add('hidden');
+});
+
+// ── 管理者モード ──
+let adminTapCount=0, adminTapTimer=null;
+document.getElementById('adminTap').addEventListener('click',()=>{
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer=setTimeout(()=>{adminTapCount=0;},3000);
+  if(adminTapCount>=10){
+    adminTapCount=0;
+    document.getElementById('adminStageSel').value='';
+    document.getElementById('adminOverlay').classList.remove('hidden');
+  }
+});
+document.getElementById('adminClose').addEventListener('click',()=>document.getElementById('adminOverlay').classList.add('hidden'));
+document.getElementById('adminUnlockAll').addEventListener('click',()=>{
+  FORMS.forEach(f=>discovered.add(f.id)); saveAll(); updateTrainBadge();
+  showBanner('✅ 全フォーム解放！');
+});
+document.getElementById('adminMaxTrain').addEventListener('click',()=>{
+  const id=currentForm.id;
+  pendingPts[id]=(pendingPts[id]||0)+50;
+  localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+  updateTrainBadge(); showBanner('💪 訓練+50pt！');
+});
+document.getElementById('adminPechi1000').addEventListener('click',()=>{
+  for(let i=0;i<1000;i++){ count++; addTrainPechi(); }
+  totalManualPechis+=1000; localStorage.setItem('chin_manual',String(totalManualPechis));
+  if(!canEvolve&&currentStageIdx<9&&count>=THRESHOLDS[currentStageIdx+1]) canEvolve=true;
+  updateUI(); showBanner('👆 +1000ぺちぺち！');
+});
+document.getElementById('adminReincarn1').addEventListener('click',()=>{
+  reincarnBonusPct+=getTotalStats(currentForm)*0.01;
+  reincarnations++; saveAll(); updateUI(); showBanner('🔄 転生+1！');
+});
+document.getElementById('adminStageSel').addEventListener('change',function(){
+  const si=parseInt(this.value); if(isNaN(si)) return;
+  count=THRESHOLDS[si]; currentStageIdx=si; canEvolve=false;
+  const f=pickForm(si); applyForm(f,true);
+  setTimeout(()=>showBanner(`🔧 Stage${si}へジャンプ！`),200);
+  this.value=''; updateUI();
+});
 
 document.getElementById('btnZukan').addEventListener('click',()=>{
   renderZukan();
