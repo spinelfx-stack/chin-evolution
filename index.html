@@ -109,6 +109,32 @@ body{
 .form-card.undiscovered .fc-stats{color:#bbb}
 .fc-hint{font-size:.5rem;color:#cc44aa;margin-top:.1rem;font-style:italic;line-height:1.3;background:#fff0f8;border-radius:4px;padding:.1rem .2rem}
 
+/* ── トレーニング ── */
+.btn-train{background:linear-gradient(135deg,#33aa55,#116633);color:#fff;box-shadow:0 3px 10px rgba(0,160,80,.4);position:relative}
+.train-badge{position:absolute;top:-4px;right:-4px;background:#ff3300;color:#fff;border-radius:50%;width:14px;height:14px;font-size:.55rem;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.t-overlay{position:fixed;inset:0;background:rgba(0,20,0,.75);display:flex;align-items:flex-start;justify-content:center;z-index:300;overflow-y:auto;padding:.8rem 0}
+.t-overlay.hidden{display:none}
+.t-modal{background:#0a1a0a;border-radius:18px;padding:.9rem;max-width:360px;width:95%;box-shadow:0 12px 48px rgba(0,0,0,.5);margin:auto;color:#ccffcc}
+.t-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.t-title{font-size:1.1rem;font-weight:bold;color:#66ff88}
+.t-close{background:#1a3a1a;border:none;border-radius:50%;width:27px;height:27px;color:#aaffaa;font-size:.95rem;cursor:pointer}
+.t-form-info{font-size:.78rem;color:#88cc88;margin-bottom:.4rem}
+.t-prog-wrap{background:#0d2a0d;border-radius:999px;height:12px;overflow:hidden;margin:.3rem 0}
+.t-prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#22aa44,#88ff44);transition:width .3s}
+.t-prog-txt{font-size:.7rem;color:#66aa66;margin-bottom:.5rem}
+.t-alloc{background:#0d2a0d;border-radius:12px;padding:.6rem;margin-bottom:.5rem}
+.t-alloc-title{font-size:.78rem;color:#aaff88;font-weight:bold;margin-bottom:.4rem}
+.t-stat-row{display:flex;align-items:center;justify-content:space-between;margin:.25rem 0}
+.t-stat-name{font-size:.75rem;color:#88cc88;width:40px}
+.t-stat-bar-wrap{flex:1;background:#0d2a0d;border-radius:999px;height:8px;margin:0 .4rem;overflow:hidden}
+.t-stat-bar{height:100%;border-radius:999px;background:#44cc66;transition:width .3s}
+.t-stat-val{font-size:.72rem;color:#ccffcc;width:30px;text-align:right}
+.t-alloc-btn{padding:.2rem .5rem;font-size:.72rem;border:none;border-radius:999px;background:#226633;color:#88ff88;cursor:pointer;font-family:inherit}
+.t-alloc-btn:hover{background:#338844}
+.t-alloc-btn:disabled{background:#1a3a1a;color:#446644;cursor:not-allowed}
+.t-pending{background:#1a3a00;border:1.5px solid #66ff44;border-radius:10px;padding:.4rem .6rem;margin-bottom:.5rem;font-size:.78rem;color:#aaff44;text-align:center}
+.t-bonus-sum{font-size:.68rem;color:#66aa66;text-align:center;margin-top:.3rem}
+
 /* ── 命名 ── */
 .name-row{display:flex;align-items:center;gap:.4rem;margin:.15rem 0}
 .name-input{font-size:.85rem;padding:.25rem .55rem;border:1.5px solid #ffaad0;border-radius:999px;
@@ -194,11 +220,31 @@ body{
   <button class="btn btn-reset" id="btnReset">↺ リセット</button>
   <button class="btn btn-zukan" id="btnZukan">📖 図鑑</button>
   <button class="btn btn-battle" id="btnBattle">⚔️ 対戦</button>
+  <button class="btn btn-train" id="btnTrain">💪 訓練<span class="train-badge hidden" id="trainBadge">!</span></button>
 </div>
 
 <div class="reincarn-row" id="reincarnRow">
   <button class="btn btn-reincarn" id="btnReincarn">🔄 転生する</button>
   <div class="reincarn-info" id="reincarnInfo"></div>
+</div>
+
+<!-- トレーニングモーダル -->
+<div class="t-overlay hidden" id="trainOverlay">
+  <div class="t-modal">
+    <div class="t-header">
+      <div class="t-title">💪 トレーニング</div>
+      <button class="t-close" id="trainClose">✕</button>
+    </div>
+    <div class="t-form-info" id="tFormInfo"></div>
+    <div id="tPendingDiv" class="t-pending hidden"></div>
+    <div class="t-prog-wrap"><div class="t-prog-fill" id="tProgFill" style="width:0%"></div></div>
+    <div class="t-prog-txt" id="tProgTxt"></div>
+    <div class="t-alloc" id="tAllocPanel">
+      <div class="t-alloc-title">📊 現在のステータス（ベース＋訓練ボーナス）</div>
+      <div id="tStatRows"></div>
+      <div class="t-bonus-sum" id="tBonusSum"></div>
+    </div>
+  </div>
 </div>
 
 <!-- 対戦モーダル -->
@@ -320,8 +366,11 @@ function checkCondition(cond) {
   if(!cond) return true;
   const now=new Date();
   switch(cond.type){
-    case 'time': return cond.hours.includes(now.getHours());
-    case 'dow':  return cond.days.includes(now.getDay());
+    case 'time':    return cond.hours.includes(now.getHours());
+    case 'dow':     return cond.days.includes(now.getDay());
+    case 'month':   return cond.months.includes(now.getMonth()+1);
+    case 'dom':     return cond.dates.includes(now.getDate());
+    case 'month_dom': return cond.months.includes(now.getMonth()+1)&&cond.dates.includes(now.getDate());
     case 'reincarn': return reincarnations>=cond.min;
     case 'collect': {
       const targets=FORMS.filter(f=>cond.stages.includes(f.si)&&!f.cond);
@@ -360,6 +409,14 @@ const FORMS = [
    eyeCol:'#cc99ff',expr:'cute',bg:['#1a1040','#0a0820'],stats:{h:10,a:18,d:8,s:13,m:6},
    cond:{type:'time',hours:[22,23,0,1,2,3]},
    condHint:'💡 深夜(22時〜4時)に進化すると出会える'},
+  {id:'s1sp2',si:1,sn:'ちびちん',name:'つきようびちびちん',rar:'SP',
+   desc:'月曜日に生まれた勤勉なちびちん',fill:'#7788ee',stroke:'#3344cc',light:'#aabbff',
+   expr:'cute',bg:['#c8d0ff','#e0e8ff'],stats:{h:11,a:11,d:11,s:10,m:8},
+   cond:{type:'dow',days:[1]},condHint:'💡 月曜日に進化すると出会える'},
+  {id:'s1sp3',si:1,sn:'ちびちん',name:'なつのちびちん',rar:'SP',
+   desc:'夏の太陽みたいに眩しいちびちん',fill:'#ffdd44',stroke:'#cc8800',light:'#fff4aa',
+   eyeCol:'#554400',expr:'cute',bg:['#fff8aa','#fffacc'],stats:{h:13,a:10,d:9,s:11,m:7},
+   cond:{type:'month',months:[6,7,8]},condHint:'💡 6〜8月に進化すると出会える'},
 
   // Stage 2 ふつうちん (total≈80)
   {id:'s2a',si:2,sn:'ふつうちん',name:'ノーマルちん',rar:'N',
@@ -385,6 +442,14 @@ const FORMS = [
    expr:'cute',bg:['#fff4cc','#fff8e0'],stats:{h:22,a:15,d:17,s:18,m:16},
    cond:{type:'time',hours:[5,6,7,8]},
    condHint:'💡 早朝(5時〜8時)に進化すると出会える'},
+  {id:'s2sp2',si:2,sn:'ふつうちん',name:'どようびちん',rar:'SP',
+   desc:'土曜日限定のハッピーなちん',fill:'#55dd88',stroke:'#228844',light:'#aaffc8',
+   eyeCol:'#113322',expr:'cute',bg:['#ccffdd','#eeffee'],stats:{h:20,a:17,d:17,s:16,m:14},
+   cond:{type:'dow',days:[6]},condHint:'💡 土曜日に進化すると出会える'},
+  {id:'s2sp3',si:2,sn:'ふつうちん',name:'まよなかちん',rar:'SP',
+   desc:'真夜中0時の謎めいたちん',fill:'#001155',stroke:'#0000aa',light:'#334488',
+   eyeCol:'#aabbff',expr:'neutral',bg:['#080830','#101840'],stats:{h:14,a:23,d:14,s:20,m:13},
+   cond:{type:'time',hours:[0]},condHint:'💡 深夜0時台に進化すると出会える'},
 
   // Stage 3 デカちん (total≈110)
   {id:'s3a',si:3,sn:'デカちん',name:'ノーマルデカちん',rar:'N',
@@ -406,6 +471,14 @@ const FORMS = [
    expr:'proud',bg:['#fff8aa','#fffacc'],stats:{h:28,a:26,d:26,s:22,m:18},
    cond:{type:'dow',days:[5]},
    condHint:'💡 金曜日に進化すると出会える'},
+  {id:'s3sp2',si:3,sn:'デカちん',name:'にちようびデカちん',rar:'SP',
+   desc:'日曜日だけ現れる陽気なデカちん',fill:'#ff7722',stroke:'#cc3300',light:'#ffaa77',
+   expr:'fierce',bg:['#ffcc99','#ffeedd'],stats:{h:28,a:27,d:26,s:22,m:17},
+   cond:{type:'dow',days:[0]},condHint:'💡 日曜日に進化すると出会える'},
+  {id:'s3sp3',si:3,sn:'デカちん',name:'ふゆのデカちん',rar:'SP',
+   desc:'冬の寒さをまとった凛々しいデカちん',fill:'#aaccee',stroke:'#4488aa',light:'#cce8ff',
+   eyeCol:'#002244',expr:'fierce',bg:['#cce8ff','#e0f0ff'],stats:{h:30,a:22,d:30,s:22,m:16},
+   cond:{type:'month',months:[12,1,2]},condHint:'💡 冬(12〜2月)に進化すると出会える'},
 
   // Stage 4 マッチョちん (total≈150)
   {id:'s4a',si:4,sn:'マッチョちん',name:'ノーマルマッチョ',rar:'N',
@@ -423,6 +496,18 @@ const FORMS = [
    desc:'氷の結晶をまとう',fill:'#66aadd',stroke:'#2255aa',light:'#99ccee',
    expr:'fierce',bg:['#c0e0ff','#e0f0ff'],stats:{h:36,a:26,d:40,s:28,m:20},
    extras:`<polygon points="30,240 34,222 38,240 30,234" fill="#aaddff" opacity=".85"/><polygon points="92,240 96,222 100,240 92,234" fill="#aaddff" opacity=".85"/><circle cx="24" cy="222" r="5" fill="#cceeff" opacity=".7"/><circle cx="106" cy="222" r="5" fill="#cceeff" opacity=".7"/>`},
+  {id:'s4sp1',si:4,sn:'マッチョちん',name:'にちようびマッチョ',rar:'SP',
+   desc:'日曜も鍛えるストイックなマッチョ',fill:'#ee9944',stroke:'#aa5500',light:'#ffcc88',
+   expr:'fierce',bg:['#ffeecc','#fff4dd'],stats:{h:38,a:38,d:34,s:26,m:24},
+   cond:{type:'dow',days:[0]},condHint:'💡 日曜日に進化すると出会える'},
+  {id:'s4sp2',si:4,sn:'マッチョちん',name:'なつやすみマッチョ',rar:'SP',
+   desc:'夏休みに鍛えまくった猛者',fill:'#ffdd44',stroke:'#cc9900',light:'#fff8aa',
+   eyeCol:'#443300',expr:'fierce',bg:['#fff8aa','#fffacc'],stats:{h:32,a:46,d:28,s:32,m:22},
+   cond:{type:'month',months:[8]},condHint:'💡 8月に進化すると出会える'},
+  {id:'s4sp3',si:4,sn:'マッチョちん',name:'はるのマッチョ',rar:'SP',
+   desc:'春風のように爽やかなマッチョ',fill:'#ffbbdd',stroke:'#cc4488',light:'#ffd8ee',
+   expr:'fierce',bg:['#ffd0e8','#ffecf4'],stats:{h:38,a:38,d:34,s:26,m:24},
+   cond:{type:'month',months:[3,4,5]},condHint:'💡 春(3〜5月)に進化すると出会える'},
 
   // Stage 5 スーパーちん (total≈190)
   {id:'s5a',si:5,sn:'スーパーちん',name:'ノーマルスーパー',rar:'N',
@@ -452,6 +537,14 @@ const FORMS = [
    cond:{type:'reincarn',min:1},
    condHint:'💡 1回以上転生してからStage5に到達すると出会える',
    extras:`<ellipse cx="65" cy="150" rx="62" ry="118" fill="#4488ff" opacity=".05"/><text x="8" y="60" font-size="14" opacity=".75">✨</text><text x="108" y="60" font-size="14" opacity=".75">✨</text>`},
+  {id:'s5sp2',si:5,sn:'スーパーちん',name:'しゅうまつスーパー',rar:'SP',
+   desc:'週末にだけ全力を出すスーパーちん',fill:'#44bbff',stroke:'#0066cc',light:'#aaddff',
+   eyeCol:'#002244',expr:'proud',bg:['#c0e8ff','#e0f4ff'],stats:{h:44,a:50,d:42,s:40,m:28},
+   cond:{type:'dow',days:[0,6]},condHint:'💡 週末(土・日)に進化すると出会える'},
+  {id:'s5sp3',si:5,sn:'スーパーちん',name:'ごごスーパー',rar:'SP',
+   desc:'午後の陽気にテンションMAX',fill:'#ffbb44',stroke:'#cc7700',light:'#ffdd88',
+   eyeCol:'#442200',expr:'proud',bg:['#fff4aa','#fff8cc'],stats:{h:40,a:55,d:36,s:40,m:29},
+   cond:{type:'time',hours:[12,13,14,15,16,17]},condHint:'💡 午後(12〜17時)に進化すると出会える'},
 
   // Stage 6 ゴールデンちん (total≈230)
   {id:'s6a',si:6,sn:'ゴールデンちん',name:'ゴールデンちん',rar:'N',
@@ -469,6 +562,20 @@ const FORMS = [
    expr:'proud',bg:['#ccf0ff','#e8f8ff'],stats:{h:46,a:52,d:50,s:44,m:38},
    topDeco:`<path d="M28 52 L38 26 L54 42 L65 13 L76 42 L92 26 L102 52 Z" fill="#c0e8ff" stroke="#4499cc" stroke-width="2.5" opacity=".9"/><circle cx="65" cy="16" r="7" fill="white" opacity=".95"/><circle cx="41" cy="32" r="5" fill="#88eeff"/><circle cx="89" cy="32" r="5" fill="#88eeff"/>`,
    extras:`<circle cx="16" cy="88" r="4" fill="white" opacity=".9"/><circle cx="114" cy="100" r="3" fill="white" opacity=".85"/><circle cx="18" cy="178" r="3.5" fill="white" opacity=".8"/>`},
+  {id:'s6sp1',si:6,sn:'ゴールデンちん',name:'しんねんゴールデン',rar:'SP',
+   desc:'新年の輝きを宿した縁起物',fill:'#ff3344',stroke:'#aa0011',light:'#ff8899',
+   expr:'proud',bg:['#ffcccc','#ffdddd'],stats:{h:56,a:60,d:50,s:44,m:35},
+   cond:{type:'month_dom',months:[1],dates:[1,2,3]},condHint:'💡 1月1〜3日(お正月)に進化すると出会える',
+   topDeco:`<path d="M28 52 L38 26 L54 42 L65 13 L76 42 L92 26 L102 52 Z" fill="#cc0011" stroke="#880000" stroke-width="2.5"/><circle cx="65" cy="16" r="6" fill="#FFD700"/><circle cx="41" cy="32" r="4.5" fill="#FFD700"/><circle cx="89" cy="32" r="4.5" fill="#FFD700"/>`},
+  {id:'s6sp2',si:6,sn:'ゴールデンちん',name:'もくようびゴールデン',rar:'SP',
+   desc:'木曜日に現れる謎の金色',fill:'#44bb88',stroke:'#117744',light:'#88ddb8',
+   eyeCol:'#112233',expr:'proud',bg:['#ccffee','#ddfff4'],stats:{h:50,a:56,d:52,s:42,m:45},
+   cond:{type:'dow',days:[4]},condHint:'💡 木曜日に進化すると出会える'},
+  {id:'s6sp3',si:6,sn:'ゴールデンちん',name:'にかいてんせいゴールデン',rar:'SP',
+   desc:'二度転生した者にだけ輝く',fill:'#ff66cc',stroke:'#aa2288',light:'#ffaaee',
+   expr:'proud',bg:['#ffd0f0','#ffecfa'],stats:{h:55,a:55,d:55,s:42,m:38},
+   cond:{type:'reincarn',min:2},condHint:'💡 2回以上転生してからStage6に到達すると出会える',
+   topDeco:`<path d="M28 52 L38 26 L54 42 L65 13 L76 42 L92 26 L102 52 Z" fill="#cc44aa" stroke="#880066" stroke-width="2.5"/><circle cx="65" cy="16" r="6" fill="#ffaaff"/><circle cx="41" cy="32" r="4.5" fill="#ffaaff"/><circle cx="89" cy="32" r="4.5" fill="#ffaaff"/>`},
 
   // Stage 7 神ちん (total≈260)
   {id:'s7a',si:7,sn:'神ちん',name:'かみちん',rar:'N',
@@ -494,6 +601,16 @@ const FORMS = [
    condHint:'💡 3回以上転生してからStage7に到達すると出会える',
    topDeco:`<ellipse cx="65" cy="22" rx="34" ry="13" fill="none" stroke="#FFD700" stroke-width="6" opacity=".95"/><ellipse cx="65" cy="22" rx="26" ry="10" fill="none" stroke="#ff8800" stroke-width="2.5" opacity=".7"/>`,
    extras:`<text x="4" y="55" font-size="15" opacity=".85">✦</text><text x="110" y="55" font-size="15" opacity=".85">✦</text><text x="3" y="155" font-size="12" opacity=".75">⭐</text><text x="111" y="155" font-size="12" opacity=".75">⭐</text>`},
+  {id:'s7sp2',si:7,sn:'神ちん',name:'ふゆのかみちん',rar:'SP',
+   desc:'冬の清らかさをまとった神',fill:'#ccddff',stroke:'#5566cc',light:'#eeeeff',
+   eyeCol:'#223399',expr:'divine',bg:['#e0e8ff','#f0f4ff'],stats:{h:68,a:60,d:60,s:46,m:41},
+   cond:{type:'month',months:[12,1,2]},condHint:'💡 冬(12〜2月)に進化すると出会える',
+   topDeco:`<ellipse cx="65" cy="22" rx="34" ry="13" fill="none" stroke="#aabbff" stroke-width="5.5" opacity=".88"/>`},
+  {id:'s7sp3',si:7,sn:'神ちん',name:'よるかみちん',rar:'SP',
+   desc:'夜の闇から生まれた禁断の神',fill:'#110033',stroke:'#440088',light:'#332255',
+   eyeCol:'#ff44ff',expr:'divine',bg:['#180830','#100820'],stats:{h:58,a:76,d:50,s:52,m:39},
+   cond:{type:'time',hours:[22,23,0,1,2,3]},condHint:'💡 深夜(22時〜4時)に進化すると出会える',
+   topDeco:`<ellipse cx="65" cy="22" rx="34" ry="13" fill="none" stroke="#8800cc" stroke-width="5.5" opacity=".9"/>`},
 
   // Stage 8 伝説ちん (total≈280)
   {id:'s8a',si:8,sn:'伝説ちん',name:'でんせつちん',rar:'N',
@@ -511,6 +628,21 @@ const FORMS = [
    eyeCol:'#aaccff',expr:'divine',bg:['#0a1030','#182050'],stats:{h:60,a:65,d:56,s:58,m:41},
    topDeco:`<path d="M16 58 L28 20 L44 42 L56 7 L65 0 L74 7 L86 42 L102 20 L114 58 Z" fill="#223366" stroke="#4488cc" stroke-width="2.5"/><circle cx="65" cy="3" r="7" fill="#aaddff"/><circle cx="43" cy="24" r="5" fill="#88aaff"/><circle cx="87" cy="24" r="5" fill="#88aaff"/>`,
    extras:`<ellipse cx="65" cy="155" rx="62" ry="23" fill="none" stroke="#4488ff" stroke-width="2" opacity=".55" transform="rotate(-18 65 155)"/><ellipse cx="65" cy="155" rx="62" ry="23" fill="none" stroke="#aa44ff" stroke-width="1.5" opacity=".4" transform="rotate(48 65 155)"/>`},
+  {id:'s8sp1',si:8,sn:'伝説ちん',name:'あかつきでんせつ',rar:'SP',
+   desc:'夜明けの空に輝く伝説',fill:'#ffaa88',stroke:'#cc5522',light:'#ffddcc',
+   eyeCol:'#441100',expr:'divine',bg:['#ffe8cc','#fff4e0'],stats:{h:70,a:68,d:62,s:52,m:43},
+   cond:{type:'time',hours:[4,5]},condHint:'💡 夜明け(4〜5時)に進化すると出会える',
+   topDeco:`<path d="M16 58 L28 20 L44 42 L56 7 L65 0 L74 7 L86 42 L102 20 L114 58 Z" fill="#ff8844" stroke="#cc4400" stroke-width="2.5"/><circle cx="65" cy="3" r="7" fill="#ffdd44"/><circle cx="43" cy="24" r="5" fill="#ffcc44"/><circle cx="87" cy="24" r="5" fill="#ffcc44"/>`},
+  {id:'s8sp2',si:8,sn:'伝説ちん',name:'ごかいてんせいでんせつ',rar:'SP',
+   desc:'5回の転生を超えた真の覚者',fill:'#aaffaa',stroke:'#228844',light:'#ccffcc',
+   eyeCol:'#004400',expr:'divine',bg:['#ccffcc','#e0ffe0'],stats:{h:75,a:65,d:65,s:48,m:42},
+   cond:{type:'reincarn',min:5},condHint:'💡 5回以上転生してからStage8に到達すると出会える',
+   topDeco:`<path d="M16 58 L28 20 L44 42 L56 7 L65 0 L74 7 L86 42 L102 20 L114 58 Z" fill="#44aa44" stroke="#226622" stroke-width="2.5"/><circle cx="65" cy="3" r="7" fill="#88ff44"/><circle cx="43" cy="24" r="5" fill="#66dd44"/><circle cx="87" cy="24" r="5" fill="#66dd44"/>`},
+  {id:'s8sp3',si:8,sn:'伝説ちん',name:'しゅうまつでんせつ',rar:'SP',
+   desc:'週末だけ現れる伝説の存在',fill:'#cc66ff',stroke:'#880099',light:'#ee99ff',
+   expr:'divine',bg:['#f0ccff','#f8e8ff'],stats:{h:65,a:70,d:62,s:55,m:43},
+   cond:{type:'dow',days:[0,6]},condHint:'💡 週末(土・日)に進化すると出会える',
+   topDeco:`<path d="M16 58 L28 20 L44 42 L56 7 L65 0 L74 7 L86 42 L102 20 L114 58 Z" fill="#aa44cc" stroke="#771199" stroke-width="2.5"/><circle cx="65" cy="3" r="7" fill="#ffaaff"/><circle cx="43" cy="24" r="5" fill="#dd88ff"/><circle cx="87" cy="24" r="5" fill="#dd88ff"/>`},
 
   // Stage 9 レインボーちん (total≈300)
   {id:'s9a',si:9,sn:'レインボーちん',name:'🌈レインボーちん',rar:'R',
@@ -529,6 +661,22 @@ const FORMS = [
    extras:`<path d="M18 145 Q-8 88 6 46 Q18 92 33 112 Z" fill="#110011" opacity=".88"/>
 <path d="M112 145 Q138 88 124 46 Q112 92 97 112 Z" fill="#110011" opacity=".88"/>
 <text x="5" y="40" font-size="13" opacity=".7">☆</text><text x="107" y="40" font-size="13" opacity=".7">☆</text>`},
+  {id:'s9sp1',si:9,sn:'レインボーちん',name:'まよなかレインボー',rar:'SP',
+   desc:'真夜中0時に生まれた神話の存在',fill:'#220044',stroke:'#6600cc',light:'#440066',
+   eyeCol:'#ff88ff',expr:'divine',bg:['#110022','#1a0030'],stats:{h:72,a:82,d:66,s:58,m:42},
+   cond:{type:'time',hours:[0]},condHint:'💡 深夜0時台にStage9に進化すると出会える',
+   topDeco:`<path d="M38 16 L44 5 L53 13 L65 2 L77 13 L86 5 L92 16 Z" fill="#440066" stroke="#cc44ff" stroke-width="2"/>`,
+   extras:`<path d="M18 145 Q-8 88 6 46 Q18 92 33 112 Z" fill="#220044" opacity=".88"/>
+<path d="M112 145 Q138 88 124 46 Q112 92 97 112 Z" fill="#220044" opacity=".88"/>
+<text x="4" y="40" font-size="14" opacity=".8">🌙</text><text x="107" y="40" font-size="14" opacity=".8">🌙</text>`},
+  {id:'s9sp2',si:9,sn:'レインボーちん',name:'にちようびレインボー',rar:'SP',
+   desc:'日曜日の休日に爆誕した最強形態',fill:'#ff8844',stroke:'#cc4400',light:'#ffcc88',
+   eyeCol:'#330000',expr:'divine',bg:['#ffe0cc','#fff0e0'],stats:{h:70,a:78,d:68,s:60,m:44},
+   cond:{type:'dow',days:[0]},condHint:'💡 日曜日にStage9に進化すると出会える',
+   topDeco:`<path d="M38 16 L44 5 L53 13 L65 2 L77 13 L86 5 L92 16 Z" fill="#ff6622" stroke="white" stroke-width="2"/>`,
+   extras:`<path d="M18 145 Q-8 88 6 46 Q18 92 33 112 Z" fill="#ff4400" opacity=".72"/>
+<path d="M112 145 Q138 88 124 46 Q112 92 97 112 Z" fill="#ff8800" opacity=".72"/>
+<text x="3" y="40" font-size="15" opacity=".85">☀</text><text x="108" y="40" font-size="15" opacity=".85">☀</text>`},
 ];
 
 const STAGE_GROUPS = Array.from({length:10},(_,i)=>FORMS.filter(f=>f.si===i));
@@ -550,11 +698,12 @@ function saveAll(){
 }
 
 // 実ステータス取得（転生ボーナス込み）
+function getTBonus(id){ return trainingBonus[id]||{h:0,a:0,d:0,s:0,m:0}; }
 function getEffectiveStats(f){
   const mult=1+reincarnBonusPct/100;
-  const s=f.stats;
-  return {h:Math.round(s.h*mult),a:Math.round(s.a*mult),d:Math.round(s.d*mult),
-          s:Math.round(s.s*mult),m:Math.round(s.m*mult)};
+  const s=f.stats, tb=getTBonus(f.id);
+  return {h:Math.round(s.h*mult)+tb.h, a:Math.round(s.a*mult)+tb.a,
+          d:Math.round(s.d*mult)+tb.d, s:Math.round(s.s*mult)+tb.s, m:Math.round(s.m*mult)+tb.m};
 }
 function getTotalStats(f){ const s=getEffectiveStats(f); return s.h+s.a+s.d+s.s+s.m; }
 
@@ -654,6 +803,7 @@ function pechipechi(x,y){
   const n=1+Math.floor(Math.random()*2);
   for(let i=0;i<n;i++) setTimeout(()=>spawnText(x+(Math.random()-.5)*40,y),i*80);
   count++;
+  addTrainPechi();
   const newSi=getStageIdxFor(count);
   if(newSi>currentStageIdx){
     currentStageIdx=newSi;
@@ -763,6 +913,102 @@ document.getElementById('btnZukan').addEventListener('click',()=>{
 document.getElementById('modalClose').addEventListener('click',()=>document.getElementById('modalOverlay').classList.add('hidden'));
 document.getElementById('modalOverlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.add('hidden');
+});
+
+// ── トレーニング状態 ──
+let trainingBonus  = JSON.parse(localStorage.getItem('chin_train')||'{}');
+// {formId:{h,a,d,s,m}} – 各フォームの訓練ボーナス（永続）
+let trainCount     = JSON.parse(localStorage.getItem('chin_tcount')||'{}');
+// {formId:number} – 今サイクルの累積ぺちぺち数
+let pendingPts     = JSON.parse(localStorage.getItem('chin_tpts')||'{}');
+// {formId:number} – 割り振り待ちのポイント数
+
+function pechisNeeded(f){
+  // 基本ステータス合計値に比例（強いほど育ちづらい）
+  const base=Object.values(f.stats).reduce((a,b)=>a+b,0);
+  return Math.max(100,Math.round(100*base/50));
+}
+
+function addTrainPechi(){
+  const id=currentForm.id, need=pechisNeeded(currentForm);
+  trainCount[id]=(trainCount[id]||0)+1;
+  while(trainCount[id]>=need){
+    trainCount[id]-=need;
+    pendingPts[id]=(pendingPts[id]||0)+1;
+  }
+  localStorage.setItem('chin_tcount',JSON.stringify(trainCount));
+  localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+  updateTrainBadge();
+}
+
+function allocateStat(stat){
+  const id=currentForm.id;
+  if(!pendingPts[id]||pendingPts[id]<=0) return;
+  if(!trainingBonus[id]) trainingBonus[id]={h:0,a:0,d:0,s:0,m:0};
+  trainingBonus[id][stat]++;
+  pendingPts[id]--;
+  localStorage.setItem('chin_train',JSON.stringify(trainingBonus));
+  localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+  updateTrainBadge();
+  renderTrainModal();
+  updateUI();
+}
+
+function updateTrainBadge(){
+  const id=currentForm.id, pts=pendingPts[id]||0;
+  const badge=document.getElementById('trainBadge');
+  if(pts>0){ badge.textContent=pts; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+}
+
+function renderTrainModal(){
+  const id=currentForm.id;
+  const need=pechisNeeded(currentForm);
+  const cur=trainCount[id]||0, pts=pendingPts[id]||0;
+  const tb=getTBonus(id);
+  const tbTotal=Object.values(tb).reduce((a,b)=>a+b,0);
+  const es=getEffectiveStats(currentForm);
+  const esTotal=Object.values(es).reduce((a,b)=>a+b,0);
+
+  document.getElementById('tFormInfo').textContent=
+    `📋 ${chinNickname||currentForm.name} / 次の+1まで ${need}ぺちぺち必要`;
+
+  const pendDiv=document.getElementById('tPendingDiv');
+  if(pts>0){ pendDiv.textContent=`🎯 割り振れるポイントが ${pts}pt あります！`; pendDiv.classList.remove('hidden'); }
+  else pendDiv.classList.add('hidden');
+
+  document.getElementById('tProgFill').style.width=(cur/need*100)+'%';
+  document.getElementById('tProgTxt').textContent=`${cur} / ${need} ぺちぺち (${Math.round(cur/need*100)}%)`;
+
+  const STAT_NAMES={h:'HP',a:'ATK',d:'DEF',s:'SPD',m:'STM'};
+  const MAX_VAL=esTotal/5*2; // 表示バー最大値
+  let rows='';
+  for(const k of ['h','a','d','s','m']){
+    const base=Math.round(currentForm.stats[k]*(1+reincarnBonusPct/100));
+    const bonus=tb[k]||0;
+    const total=es[k];
+    const pct=Math.min(100,total/MAX_VAL*100);
+    rows+=`<div class="t-stat-row">
+      <span class="t-stat-name">${STAT_NAMES[k]}</span>
+      <div class="t-stat-bar-wrap"><div class="t-stat-bar" style="width:${pct}%"></div></div>
+      <span class="t-stat-val">${total}<span style="color:#66aa66;font-size:.6rem">+${bonus}</span></span>
+      <button class="t-alloc-btn" onclick="allocateStat('${k}')" ${pts<=0?'disabled':''}>▲</button>
+    </div>`;
+  }
+  document.getElementById('tStatRows').innerHTML=rows;
+  document.getElementById('tBonusSum').textContent=
+    `訓練ボーナス合計: +${tbTotal} (合計ステータス: ${esTotal})`;
+}
+
+document.getElementById('btnTrain').addEventListener('click',()=>{
+  renderTrainModal();
+  document.getElementById('trainOverlay').classList.remove('hidden');
+});
+document.getElementById('trainClose').addEventListener('click',()=>
+  document.getElementById('trainOverlay').classList.add('hidden'));
+document.getElementById('trainOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('trainOverlay'))
+    document.getElementById('trainOverlay').classList.add('hidden');
 });
 
 // ── 命名 ──
@@ -993,6 +1239,7 @@ document.getElementById('btnRematch').addEventListener('click', () => {
 applyForm(FORMS[0],false);
 applyNickname();
 updateUI();
+updateTrainBadge();
 </script>
 </body>
 </html>
