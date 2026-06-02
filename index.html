@@ -143,6 +143,30 @@ body{
 .name-save{font-size:.75rem;padding:.22rem .65rem;border:none;border-radius:999px;
   background:#ff66aa;color:#fff;cursor:pointer;font-family:inherit}
 
+/* ── 発射 ── */
+.btn-shoot{background:linear-gradient(135deg,#4488ff,#1133cc);color:#fff;
+  box-shadow:0 4px 16px rgba(30,100,255,.45);font-size:.95rem;padding:.45rem 1.2rem}
+.character.shoot{animation:shootRecoil .4s ease}
+@keyframes shootRecoil{
+  0%{transform:scaleY(1) translateY(0)}
+  20%{transform:scaleY(.82) translateY(12px)}
+  45%{transform:scaleY(1.12) translateY(-6px)}
+  70%{transform:scaleY(.96) translateY(2px)}
+  100%{transform:scaleY(1) translateY(0)}
+}
+.drop{position:fixed;background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.7),#4488ff 40%);
+  border-radius:50%;pointer-events:none;z-index:50}
+.dopyu-text{position:fixed;font-weight:bold;color:#4488ff;
+  animation:dopyuPop 1.4s cubic-bezier(.2,.8,.4,1) forwards;z-index:100;pointer-events:none;white-space:nowrap;
+  font-family:'Hiragino Maru Gothic Pro','Rounded Mplus 1c',sans-serif}
+@keyframes dopyuPop{
+  0%{opacity:0;transform:scale(.2) translateY(0) rotate(-5deg)}
+  12%{opacity:1;transform:scale(1.5) translateY(-20px) rotate(4deg)}
+  30%{opacity:1;transform:scale(1.1) translateY(-50px) rotate(-2deg)}
+  65%{opacity:.9;transform:scale(1) translateY(-110px) rotate(3deg)}
+  100%{opacity:0;transform:scale(.8) translateY(-200px) rotate(-4deg)}
+}
+
 /* ── アクセサリー ── */
 .btn-acc{background:linear-gradient(135deg,#dd44aa,#991166);color:#fff;box-shadow:0 3px 10px rgba(200,0,140,.4)}
 .acc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;
@@ -283,6 +307,7 @@ body{
 <div class="hint">タップ / クリックでぺちぺち</div>
 
 <div class="controls">
+  <button class="btn btn-shoot" id="btnShoot">💦 発射！</button>
   <button class="btn btn-auto" id="btnAuto">▶ オート</button>
   <select class="speed-sel" id="speedSel">
     <option value="333">遅</option>
@@ -1315,6 +1340,78 @@ document.getElementById('trainOverlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('trainOverlay'))
     document.getElementById('trainOverlay').classList.add('hidden');
 });
+
+// ── 発射 ──
+let shooting = false;
+const DOPYU_WORDS = ['ドピュー！','ドピュッ！','ドバーッ！','びゅーっ！','ドバドバー！'];
+
+function getTipPos() {
+  const rect = charEl.getBoundingClientRect();
+  // フォームの先端(頭の上部 10%付近)
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.08 };
+}
+
+function spawnDrop(tipX, tipY, delay) {
+  setTimeout(() => {
+    const el = document.createElement('div');
+    el.className = 'drop';
+    const size = 8 + Math.random() * 16;
+    const angle = -90 + (Math.random() - 0.5) * 70;
+    const speed = 300 + Math.random() * 400;
+    const rad = angle * Math.PI / 180;
+    const vx = Math.cos(rad) * speed;
+    const vy = Math.sin(rad) * speed;
+    el.style.width = size + 'px';
+    el.style.height = (size * (0.8 + Math.random() * 0.6)) + 'px';
+    el.style.left = (tipX - size / 2) + 'px';
+    el.style.top  = (tipY - size / 2) + 'px';
+    document.body.appendChild(el);
+    const duration = 800 + Math.random() * 400;
+    const startTime = performance.now();
+    const gravity = 600;
+    function animate(now) {
+      const t = (now - startTime) / 1000;
+      if (t > duration / 1000) { el.remove(); return; }
+      const x = tipX + vx * t;
+      const y = tipY + vy * t + 0.5 * gravity * t * t;
+      el.style.left    = (x - size / 2) + 'px';
+      el.style.top     = (y - size / 2) + 'px';
+      el.style.opacity = Math.max(0, 1 - t / (duration / 1000));
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  }, delay);
+}
+
+function spawnDopyuText(tipX, tipY) {
+  const el = document.createElement('div');
+  el.className = 'dopyu-text';
+  el.textContent = DOPYU_WORDS[Math.floor(Math.random() * DOPYU_WORDS.length)];
+  el.style.left = (tipX - 60 + (Math.random() - 0.5) * 30) + 'px';
+  el.style.top  = (tipY - 10) + 'px';
+  el.style.fontSize = (1.4 + Math.random() * 0.5) + 'rem';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+function shoot() {
+  if (shooting) return;
+  shooting = true;
+  charEl.classList.remove('wiggle', 'shoot');
+  void charEl.offsetWidth;
+  charEl.classList.add('shoot');
+  charEl.addEventListener('animationend', () => charEl.classList.remove('shoot'), { once: true });
+  const tip = getTipPos();
+  spawnDopyuText(tip.x, tip.y);
+  const dropCount = 12 + Math.floor(Math.random() * 8);
+  for (let i = 0; i < dropCount; i++) spawnDrop(tip.x, tip.y, i * 40);
+  setTimeout(() => { shooting = false; }, 600);
+}
+
+document.getElementById('btnShoot').addEventListener('click', shoot);
+document.getElementById('btnShoot').addEventListener('touchstart', e => {
+  e.preventDefault(); shoot();
+}, { passive: false });
 
 // ── 命名 ──
 let chinNickname = localStorage.getItem('chin_nick') || '';
