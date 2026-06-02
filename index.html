@@ -108,12 +108,69 @@ body{
 .fc-stats{font-size:.5rem;color:#886699;margin-top:.08rem;line-height:1.4}
 .form-card.undiscovered .fc-stats{color:#bbb}
 .fc-hint{font-size:.5rem;color:#cc44aa;margin-top:.1rem;font-style:italic;line-height:1.3;background:#fff0f8;border-radius:4px;padding:.1rem .2rem}
+
+/* ── 命名 ── */
+.name-row{display:flex;align-items:center;gap:.4rem;margin:.15rem 0}
+.name-input{font-size:.85rem;padding:.25rem .55rem;border:1.5px solid #ffaad0;border-radius:999px;
+  width:120px;font-family:inherit;color:#cc2266;background:#fff8fc;outline:none}
+.name-input:focus{border-color:#ff4499}
+.name-save{font-size:.75rem;padding:.22rem .65rem;border:none;border-radius:999px;
+  background:#ff66aa;color:#fff;cursor:pointer;font-family:inherit}
+
+/* ── NPC対戦 ── */
+.btn-battle{background:linear-gradient(135deg,#ff5533,#cc2200);color:#fff;box-shadow:0 3px 10px rgba(220,80,0,.4)}
+.b-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;
+  justify-content:center;z-index:300;overflow-y:auto;padding:.8rem 0}
+.b-overlay.hidden{display:none}
+.b-modal{background:#1a0a20;border-radius:18px;padding:.9rem;max-width:400px;width:95%;
+  box-shadow:0 12px 48px rgba(0,0,0,.5);margin:auto;color:#eeddff}
+.b-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.b-title{font-size:1.15rem;font-weight:bold;color:#ff88cc}
+.b-close{background:#333;border:none;border-radius:50%;width:27px;height:27px;color:#eee;
+  font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.npc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.npc-card{background:#2a1030;border:1.5px solid #553355;border-radius:12px;padding:.5rem;
+  cursor:pointer;transition:border-color .2s,transform .1s;text-align:center}
+.npc-card:hover{border-color:#ff66cc;transform:scale(1.03)}
+.npc-card svg{width:56px;height:72px;display:block;margin:0 auto}
+.npc-name{font-size:.75rem;font-weight:bold;color:#ffaadd;margin-top:.2rem}
+.npc-diff{font-size:.7rem;margin:.1rem 0}
+.npc-desc{font-size:.58rem;color:#cc99bb;line-height:1.3}
+.npc-stats{font-size:.58rem;color:#aa88cc;margin-top:.15rem}
+.b-fighters{display:flex;justify-content:space-between;align-items:flex-start;gap:.4rem;margin-bottom:.5rem}
+.b-fighter{flex:1;text-align:center}
+.b-fighter svg{width:60px;height:78px;display:block;margin:0 auto}
+.b-fname{font-size:.7rem;font-weight:bold;color:#ffaadd;margin:.15rem 0 .1rem;word-break:break-all}
+.hp-wrap{background:#330022;border-radius:999px;height:10px;overflow:hidden;margin-bottom:.12rem}
+.hp-fill{height:100%;border-radius:999px;transition:width .4s ease;background:linear-gradient(90deg,#ff4466,#ff0033)}
+.hp-fill.npc{background:linear-gradient(90deg,#aa44ff,#6600cc)}
+.hp-txt{font-size:.62rem;color:#cc88aa}
+.b-vs{font-size:1.4rem;font-weight:bold;color:#ff88cc;align-self:center;flex:0}
+.b-log{background:#110818;border-radius:10px;padding:.5rem .6rem;height:150px;overflow-y:auto;
+  font-size:.7rem;line-height:1.7;margin-bottom:.5rem}
+.b-log-entry{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.b-log .atk{color:#ff9966}
+.b-log .npc-atk{color:#bb88ff}
+.b-log .crit{color:#ffee00;font-weight:bold}
+.b-log .round-sep{color:#554466;font-size:.6rem}
+.b-result{text-align:center;padding:.6rem;border-radius:12px;margin-bottom:.5rem;font-weight:bold;font-size:1rem}
+.b-result.win{background:linear-gradient(135deg,#224400,#335500);color:#aaff44;border:1.5px solid #66aa00}
+.b-result.lose{background:linear-gradient(135deg,#440011,#550022);color:#ff8888;border:1.5px solid #aa2244}
+.b-result.draw{background:linear-gradient(135deg,#332200,#443300);color:#ffcc44;border:1.5px solid #886600}
+.b-btn-row{display:flex;gap:.4rem;justify-content:center}
+.b-record{font-size:.7rem;color:#aa88cc;text-align:center;margin-bottom:.5rem}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 <div class="title">🍆 ちんちん進化クリッカー 🍆</div>
 <div class="stage-label" id="stageLbl"></div>
 <div class="form-name" id="formName"></div>
+<div class="name-row">
+  <input class="name-input" id="nicknameInput" maxlength="12" placeholder="ちんに名前をつける">
+  <button class="name-save" id="btnSaveName">決定</button>
+</div>
 <div class="next-info" id="nextInfo"></div>
 <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
 
@@ -136,11 +193,41 @@ body{
   </select>
   <button class="btn btn-reset" id="btnReset">↺ リセット</button>
   <button class="btn btn-zukan" id="btnZukan">📖 図鑑</button>
+  <button class="btn btn-battle" id="btnBattle">⚔️ 対戦</button>
 </div>
 
 <div class="reincarn-row" id="reincarnRow">
   <button class="btn btn-reincarn" id="btnReincarn">🔄 転生する</button>
   <div class="reincarn-info" id="reincarnInfo"></div>
+</div>
+
+<!-- 対戦モーダル -->
+<div class="b-overlay hidden" id="battleOverlay">
+  <div class="b-modal">
+    <div class="b-header">
+      <div class="b-title">⚔️ NPC対戦</div>
+      <button class="b-close" id="battleClose">✕</button>
+    </div>
+    <div class="b-record" id="battleRecord"></div>
+    <!-- NPC選択 -->
+    <div id="npcSelect">
+      <div class="npc-grid" id="npcGrid"></div>
+    </div>
+    <!-- バトル画面 -->
+    <div id="battleScreen" class="hidden">
+      <div class="b-fighters">
+        <div class="b-fighter" id="bFighterPlayer"></div>
+        <div class="b-vs">VS</div>
+        <div class="b-fighter" id="bFighterNpc"></div>
+      </div>
+      <div class="b-log" id="battleLog"></div>
+      <div class="b-result hidden" id="battleResult"></div>
+      <div class="b-btn-row">
+        <button class="btn btn-reset" id="btnRematch" style="display:none">もう一戦</button>
+        <button class="btn btn-zukan" id="btnBackNpc">← NPC選択</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 図鑑モーダル -->
@@ -678,8 +765,233 @@ document.getElementById('modalOverlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.add('hidden');
 });
 
+// ── 命名 ──
+let chinNickname = localStorage.getItem('chin_nick') || '';
+function applyNickname() {
+  document.getElementById('nicknameInput').value = chinNickname;
+}
+document.getElementById('btnSaveName').addEventListener('click', () => {
+  const v = document.getElementById('nicknameInput').value.trim();
+  chinNickname = v;
+  localStorage.setItem('chin_nick', v);
+  updateUI();
+});
+
+// ── NPC定義 ──
+const NPCS = [
+  { id:'npc1', name:'チビスケ', diff:'⭐', desc:'最初の相手。手加減してくれる',
+    stats:{h:35,a:10,d:7,s:7,m:6},
+    f:{si:1,fill:'#ffcc99',stroke:'#cc8844',light:'#ffe8cc',eyeCol:'#553311',expr:'cute',extras:'',topDeco:''} },
+  { id:'npc2', name:'むらさき丸', diff:'⭐⭐', desc:'魔法使いの見習い。少し賢い',
+    stats:{h:62,a:20,d:16,s:14,m:12},
+    f:{si:2,fill:'#cc88cc',stroke:'#884488',light:'#e8c8e8',eyeCol:'#440044',expr:'neutral',extras:'',topDeco:''} },
+  { id:'npc3', name:'赤鬼ちん', diff:'⭐⭐⭐', desc:'鬼の力でぶん殴る中級者',
+    stats:{h:95,a:32,d:22,s:20,m:16},
+    f:{si:3,fill:'#cc3333',stroke:'#881111',light:'#ee8888',eyeCol:'#110000',expr:'fierce',extras:'',topDeco:''} },
+  { id:'npc4', name:'アイアンゴーレム', diff:'⭐⭐⭐⭐', desc:'硬さなら誰にも負けない鉄の男',
+    stats:{h:130,a:36,d:48,s:20,m:22},
+    f:{si:4,fill:'#778899',stroke:'#445566',light:'#aabbcc',eyeCol:'#222233',expr:'fierce',extras:'',topDeco:''} },
+  { id:'npc5', name:'サンダーキング', diff:'⭐⭐⭐⭐⭐', desc:'稲妻の速さで攻める強敵',
+    stats:{h:155,a:62,d:28,s:52,m:26},
+    f:{si:5,fill:'#ddcc00',stroke:'#998800',light:'#ffee88',eyeCol:'#332200',expr:'proud',
+       extras:`<path d="M14 95 L24 128 L18 128 L28 162" fill="none" stroke="#ffee00" stroke-width="3" opacity=".85"/><path d="M116 95 L106 128 L112 128 L102 162" fill="none" stroke="#ffee00" stroke-width="3" opacity=".85"/>`,topDeco:''} },
+  { id:'npc6', name:'ゴールドキング', diff:'💀', desc:'黄金の王者。容赦しない',
+    stats:{h:200,a:62,d:55,s:48,m:40},
+    f:{si:6,fill:'#ddaa00',stroke:'#996600',light:'#ffee88',eyeCol:'#442200',expr:'proud',extras:'',
+       topDeco:`<path d="M28 52 L38 26 L54 42 L65 13 L76 42 L92 26 L102 52 Z" fill="#FFD700" stroke="#cc8800" stroke-width="2.5"/>`} },
+  { id:'npc7', name:'ダークロード', diff:'💀💀', desc:'闇の支配者。全てを滅ぼす',
+    stats:{h:235,a:80,d:55,s:60,m:42},
+    f:{si:7,fill:'#220033',stroke:'#660099',light:'#553366',eyeCol:'#cc00ff',expr:'divine',extras:'',
+       topDeco:`<ellipse cx="65" cy="22" rx="34" ry="13" fill="none" stroke="#6600cc" stroke-width="5.5" opacity=".88"/>`} },
+  { id:'npc8', name:'レインボーゴッド', diff:'💀💀💀', desc:'神を超えた究極存在。勝てる...？',
+    stats:{h:270,a:88,d:72,s:72,m:55},
+    f:{si:9,fill:'#995599',stroke:'#551155',light:'#cc88cc',eyeCol:'#ffaaff',expr:'divine',
+       extras:`<path d="M18 145 Q-8 88 6 46 Q18 92 33 112 Z" fill="#ff4444" opacity=".7"/><path d="M112 145 Q138 88 124 46 Q112 92 97 112 Z" fill="#4488ff" opacity=".7"/>`,
+       topDeco:`<path d="M38 16 L44 5 L53 13 L65 2 L77 13 L86 5 L92 16 Z" fill="#FFD700" stroke="white" stroke-width="2"/>`} },
+];
+
+// ── バトルロジック ──
+function simulateBattle(player, npc) {
+  let pH = player.stats.h, nH = npc.stats.h;
+  const maxPH = pH, maxNH = nH;
+  const log = [];
+
+  const attack = (atk, defDef, rng) => {
+    const crit = rng() < atk.stats.m / 180;
+    let dmg = Math.max(1, Math.round(atk.stats.a - defDef * 0.5));
+    if (crit) dmg = Math.round(dmg * 2);
+    return { dmg, crit };
+  };
+
+  // シード乱数（再現性あり）
+  let seed = player.stats.h + player.stats.a + npc.stats.h + npc.stats.a + 12345;
+  const rng = () => { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff; };
+
+  const pFirst = player.stats.s >= npc.stats.s;
+  const pDouble = player.stats.s >= npc.stats.s * 1.5;
+  const nDouble = npc.stats.s >= player.stats.s * 1.5;
+
+  for (let round = 1; round <= 35 && pH > 0 && nH > 0; round++) {
+    log.push({ type:'sep', round });
+    const doAttack = (isPlayer) => {
+      if (pH <= 0 || nH <= 0) return;
+      if (isPlayer) {
+        const r = attack(player, npc.stats.d, rng);
+        nH = Math.max(0, nH - r.dmg);
+        log.push({ type:'atk', by:'p', dmg:r.dmg, crit:r.crit, pH, nH, maxPH, maxNH });
+      } else {
+        const r = attack(npc, player.stats.d, rng);
+        pH = Math.max(0, pH - r.dmg);
+        log.push({ type:'atk', by:'n', dmg:r.dmg, crit:r.crit, pH, nH, maxPH, maxNH });
+      }
+    };
+    if (pFirst) {
+      doAttack(true);
+      if (pDouble) doAttack(true);
+      doAttack(false);
+      if (nDouble) doAttack(false);
+    } else {
+      doAttack(false);
+      if (nDouble) doAttack(false);
+      doAttack(true);
+      if (pDouble) doAttack(true);
+    }
+  }
+  const winner = pH > nH ? 'player' : pH < nH ? 'npc' : 'draw';
+  return { log, winner, pH: Math.max(0,pH), nH: Math.max(0,nH) };
+}
+
+// ── バトルUI ──
+let battleWins = +( localStorage.getItem('b_wins')||'0');
+let battleLosses = +( localStorage.getItem('b_losses')||'0');
+let currentNpc = null;
+
+function fightSVG(f, small=true) {
+  const inner = f.si===0 ? eggSVG(f) : chinSVG(SZ[f.si], f);
+  const w = small?60:80, h=small?78:104;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+
+function renderNpcGrid() {
+  const grid = document.getElementById('npcGrid');
+  grid.innerHTML = '';
+  NPCS.forEach(npc => {
+    const card = document.createElement('div');
+    card.className = 'npc-card';
+    const tot = Object.values(npc.stats).reduce((a,b)=>a+b,0);
+    card.innerHTML = fightSVG(npc.f)
+      + `<div class="npc-name">${npc.name}</div>`
+      + `<div class="npc-diff">${npc.diff}</div>`
+      + `<div class="npc-desc">${npc.desc}</div>`
+      + `<div class="npc-stats">HP:${npc.stats.h} ATK:${npc.stats.a} DEF:${npc.stats.d}</div>`;
+    card.addEventListener('click', () => startBattle(npc));
+    grid.appendChild(card);
+  });
+}
+
+function updateBattleRecord() {
+  document.getElementById('battleRecord').textContent = `戦績: ${battleWins}勝 ${battleLosses}敗`;
+}
+
+function fighterHTML(name, f, stats, isNpc) {
+  const eff = getEffectiveStats({stats});
+  return `
+    ${fightSVG(f)}
+    <div class="b-fname">${name}</div>
+    <div class="hp-wrap"><div class="hp-fill${isNpc?' npc':''}" id="${isNpc?'npcHpBar':'playerHpBar'}" style="width:100%"></div></div>
+    <div class="hp-txt" id="${isNpc?'npcHpTxt':'playerHpTxt'}">${eff.h}/${eff.h}</div>`;
+}
+
+async function startBattle(npc) {
+  currentNpc = npc;
+  document.getElementById('npcSelect').classList.add('hidden');
+  const bs = document.getElementById('battleScreen');
+  bs.classList.remove('hidden');
+  document.getElementById('battleResult').classList.add('hidden');
+  document.getElementById('btnRematch').style.display = 'none';
+  document.getElementById('battleLog').innerHTML = '';
+
+  const playerStats = getEffectiveStats(currentForm);
+  const playerFighter = { stats: playerStats };
+  const npcFighter = { stats: npc.stats };
+
+  const playerName = chinNickname || currentForm.name;
+  document.getElementById('bFighterPlayer').innerHTML = fighterHTML(playerName, currentForm, playerStats, false);
+  document.getElementById('bFighterNpc').innerHTML = fighterHTML(npc.name, npc.f, npc.stats, true);
+
+  const result = simulateBattle(playerFighter, npcFighter);
+  await animateBattle(result, playerName, npc.name, playerStats.h, npc.stats.h);
+
+  // 結果
+  const resEl = document.getElementById('battleResult');
+  resEl.classList.remove('hidden');
+  if (result.winner === 'player') {
+    resEl.className = 'b-result win';
+    resEl.textContent = `🎉 ${playerName} の勝利！`;
+    battleWins++; localStorage.setItem('b_wins', battleWins);
+  } else if (result.winner === 'npc') {
+    resEl.className = 'b-result lose';
+    resEl.textContent = `💀 ${npc.name} の勝利…`;
+    battleLosses++; localStorage.setItem('b_losses', battleLosses);
+  } else {
+    resEl.className = 'b-result draw';
+    resEl.textContent = '🤝 引き分け！';
+  }
+  updateBattleRecord();
+  document.getElementById('btnRematch').style.display = 'inline-block';
+}
+
+async function animateBattle(result, pName, nName, maxPH, maxNH) {
+  const log = document.getElementById('battleLog');
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+  for (const e of result.log) {
+    await delay(e.type==='sep' ? 80 : 380);
+    if (e.type === 'sep') {
+      const d = document.createElement('div');
+      d.className = 'round-sep b-log-entry';
+      d.textContent = `── Round ${e.round} ──`;
+      log.appendChild(d); log.scrollTop = log.scrollHeight; continue;
+    }
+    const d = document.createElement('div');
+    d.className = 'b-log-entry ' + (e.by==='p' ? 'atk' : 'npc-atk');
+    const who = e.by==='p' ? pName : nName;
+    const target = e.by==='p' ? nName : pName;
+    const critTxt = e.crit ? ' <span class="crit">💥 CRIT!</span>' : '';
+    d.innerHTML = `⚔️ <b>${who}</b> → ${target} <b>-${e.dmg}</b>${critTxt}`;
+    log.appendChild(d); log.scrollTop = log.scrollHeight;
+    // HPバー更新
+    document.getElementById('playerHpBar').style.width = (e.pH / maxPH * 100) + '%';
+    document.getElementById('playerHpTxt').textContent = `${e.pH}/${maxPH}`;
+    document.getElementById('npcHpBar').style.width = (e.nH / maxNH * 100) + '%';
+    document.getElementById('npcHpTxt').textContent = `${e.nH}/${maxNH}`;
+  }
+}
+
+// バトルモーダルイベント
+document.getElementById('btnBattle').addEventListener('click', () => {
+  renderNpcGrid();
+  updateBattleRecord();
+  document.getElementById('npcSelect').classList.remove('hidden');
+  document.getElementById('battleScreen').classList.add('hidden');
+  document.getElementById('battleOverlay').classList.remove('hidden');
+});
+document.getElementById('battleClose').addEventListener('click', () =>
+  document.getElementById('battleOverlay').classList.add('hidden'));
+document.getElementById('battleOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('battleOverlay'))
+    document.getElementById('battleOverlay').classList.add('hidden');
+});
+document.getElementById('btnBackNpc').addEventListener('click', () => {
+  document.getElementById('battleScreen').classList.add('hidden');
+  document.getElementById('npcSelect').classList.remove('hidden');
+});
+document.getElementById('btnRematch').addEventListener('click', () => {
+  if (currentNpc) startBattle(currentNpc);
+});
+
 // ── 初期化 ──
 applyForm(FORMS[0],false);
+applyNickname();
 updateUI();
 </script>
 </body>
