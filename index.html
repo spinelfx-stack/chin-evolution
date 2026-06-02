@@ -143,6 +143,42 @@ body{
 .name-save{font-size:.75rem;padding:.22rem .65rem;border:none;border-radius:999px;
   background:#ff66aa;color:#fff;cursor:pointer;font-family:inherit}
 
+/* ── アクセサリー ── */
+.btn-acc{background:linear-gradient(135deg,#dd44aa,#991166);color:#fff;box-shadow:0 3px 10px rgba(200,0,140,.4)}
+.acc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;
+  justify-content:center;z-index:300;overflow-y:auto;padding:.8rem 0}
+.acc-overlay.hidden{display:none}
+.acc-modal{background:#1a0820;border-radius:18px;padding:.9rem;max-width:380px;width:95%;
+  box-shadow:0 12px 48px rgba(180,0,120,.3);margin:auto;color:#ffccee}
+.acc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.acc-title{font-size:1.1rem;font-weight:bold;color:#ff88cc}
+.acc-close{background:#2a1030;border:none;border-radius:50%;width:27px;height:27px;
+  color:#ffaacc;font-size:.95rem;cursor:pointer}
+.acc-equipped-row{display:flex;gap:.5rem;margin-bottom:.6rem}
+.acc-slot{flex:1;background:#2a1030;border:1.5px solid #553355;border-radius:10px;
+  padding:.35rem .2rem;text-align:center;min-height:70px}
+.acc-slot-label{font-size:.6rem;color:#aa77aa;margin-bottom:.2rem}
+.acc-slot-inner{font-size:.6rem;color:#dd99cc}
+.acc-slot svg{width:42px;height:54px;display:block;margin:0 auto}
+.acc-tabs{display:flex;gap:.3rem;margin-bottom:.4rem}
+.acc-tab{flex:1;padding:.3rem;font-size:.75rem;border:none;border-radius:8px;cursor:pointer;
+  font-family:inherit;background:#2a1030;color:#cc88aa;transition:background .2s}
+.acc-tab.active{background:#661144;color:#ffaadd}
+.acc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+.acc-card{background:#2a1030;border:1.5px solid #553355;border-radius:10px;padding:.25rem;
+  text-align:center;cursor:pointer;transition:border-color .2s,transform .1s}
+.acc-card:hover{border-color:#ff66cc;transform:scale(1.04)}
+.acc-card.equipped{border-color:#ff44aa;background:#3a1040}
+.acc-card svg{width:48px;height:60px;display:block;margin:0 auto}
+.acc-card .ac-name{font-size:.56rem;color:#ffaacc;margin-top:.12rem;word-break:break-all;line-height:1.2}
+.acc-card .ac-rar{font-size:.55rem;margin-top:.06rem}
+.acc-empty{font-size:.75rem;color:#664466;text-align:center;padding:.8rem 0}
+.acc-drop-banner{position:fixed;top:44%;left:50%;transform:translate(-50%,-50%);
+  background:linear-gradient(135deg,#881166,#440033);color:#fff;
+  font-size:1.3rem;font-weight:bold;padding:.65rem 1.4rem;border-radius:16px;
+  box-shadow:0 8px 28px rgba(200,0,120,.5);pointer-events:none;
+  animation:bannerAnim 2.4s ease forwards;z-index:210;text-align:center}
+
 /* ── 進化ボタン ── */
 .evolve-ready-row{text-align:center;margin:.25rem 0;animation:evolveGlow 1.5s infinite}
 @keyframes evolveGlow{0%,100%{opacity:1}50%{opacity:.7}}
@@ -257,12 +293,31 @@ body{
   <button class="btn btn-zukan" id="btnZukan">📖 図鑑</button>
   <button class="btn btn-battle" id="btnBattle">⚔️ 対戦</button>
   <button class="btn btn-train" id="btnTrain">💪 訓練<span class="train-badge hidden" id="trainBadge">!</span></button>
+  <button class="btn btn-acc" id="btnAcc">💍 アクセサリー</button>
   <button class="btn btn-summary" id="btnSummary">📊 サマリー</button>
 </div>
 
 <div class="reincarn-row" id="reincarnRow">
   <button class="btn btn-reincarn" id="btnReincarn">🔄 転生する</button>
   <div class="reincarn-info" id="reincarnInfo"></div>
+</div>
+
+<!-- アクセサリーモーダル -->
+<div class="acc-overlay hidden" id="accOverlay">
+  <div class="acc-modal">
+    <div class="acc-header">
+      <div class="acc-title">💍 アクセサリー</div>
+      <button class="acc-close" id="accClose">✕</button>
+    </div>
+    <div class="acc-equipped-row" id="accEquippedRow"></div>
+    <div class="acc-tabs" id="accTabs">
+      <button class="acc-tab active" data-slot="head">👑 頭</button>
+      <button class="acc-tab" data-slot="body">🎽 ボディ</button>
+      <button class="acc-tab" data-slot="effect">✨ エフェクト</button>
+    </div>
+    <div class="acc-grid" id="accGrid"></div>
+    <div class="acc-empty hidden" id="accEmpty">まだ持っていません。NPC対戦に勝つとゲットできます！</div>
+  </div>
 </div>
 
 <!-- サマリーモーダル -->
@@ -820,7 +875,7 @@ function applyForm(f,withAnim){
     localStorage.setItem('chin_tcount',JSON.stringify(trainCount));
     localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
   }
-  charG.innerHTML=renderForm(f);
+  charG.innerHTML=renderForm(f)+renderEquippedAcc(f);
   if(withAnim){
     charEl.classList.remove('wiggle','evolving');
     void charEl.offsetWidth;
@@ -1018,6 +1073,69 @@ function renderZukan(){
   }
 }
 
+// ── アクセサリーUI ──
+let accCurrentSlot='head';
+const SLOT_LABELS={head:'👑 頭',body:'🎽 ボディ',effect:'✨ エフェクト'};
+
+function renderAccModal(){
+  // 装備中スロット行
+  const row=document.getElementById('accEquippedRow');
+  row.innerHTML=['head','body','effect'].map(slot=>{
+    const id=equippedAcc[slot];
+    const acc=id?ACCESSORIES.find(a=>a.id===id):null;
+    return `<div class="acc-slot"><div class="acc-slot-label">${SLOT_LABELS[slot]}</div>
+      ${acc?accPreviewSVG(acc,true)+'<div class="acc-slot-inner">'+acc.name+'</div>':'<div class="acc-slot-inner" style="margin-top:12px;font-size:.68rem;color:#664466">なし</div>'}
+    </div>`;
+  }).join('');
+
+  // タブ
+  document.querySelectorAll('.acc-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.slot===accCurrentSlot);
+  });
+
+  // 所持グリッド
+  const owned=ACCESSORIES.filter(a=>a.slot===accCurrentSlot&&ownedAcc.has(a.id));
+  const empty=document.getElementById('accEmpty');
+  const grid=document.getElementById('accGrid');
+  if(owned.length===0){ grid.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  grid.innerHTML=owned.map(acc=>{
+    const isEq=equippedAcc[acc.slot]===acc.id;
+    const rar=acc.rar==='SR'?'★★★':acc.rar==='R'?'★★':'★';
+    return `<div class="acc-card${isEq?' equipped':''}" data-id="${acc.id}">
+      ${accPreviewSVG(acc,isEq)}
+      <div class="ac-name">${acc.name}</div>
+      <div class="ac-rar" style="color:${acc.rar==='SR'?'#ffee44':acc.rar==='R'?'#ffaa44':'#aabbcc'}">${rar}</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.acc-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const id=card.dataset.id;
+      const acc=ACCESSORIES.find(a=>a.id===id);
+      if(!acc) return;
+      if(equippedAcc[acc.slot]===id) equippedAcc[acc.slot]=null; // 外す
+      else equippedAcc[acc.slot]=id; // 装備
+      saveAcc();
+      // キャラ再描画
+      charG.innerHTML=renderForm(currentForm)+renderEquippedAcc(currentForm);
+      renderAccModal();
+    });
+  });
+}
+
+document.getElementById('btnAcc').addEventListener('click',()=>{
+  accCurrentSlot='head';
+  renderAccModal();
+  document.getElementById('accOverlay').classList.remove('hidden');
+});
+document.getElementById('accClose').addEventListener('click',()=>document.getElementById('accOverlay').classList.add('hidden'));
+document.getElementById('accOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('accOverlay')) document.getElementById('accOverlay').classList.add('hidden');
+});
+document.querySelectorAll('.acc-tab').forEach(t=>{
+  t.addEventListener('click',()=>{ accCurrentSlot=t.dataset.slot; renderAccModal(); });
+});
+
 // ── サマリー ──
 function renderSummary(){
   const es=getEffectiveStats(currentForm);
@@ -1037,6 +1155,7 @@ function renderSummary(){
     ['訓練ボーナス(現フォーム)', '+'+tbTotal],
     ['現在ステータス合計', esTotal],
     ['バトル戦績', battleWins+'勝 '+battleLosses+'敗'],
+    ['アクセサリー所持', ownedAcc.size+' / '+ACCESSORIES.length+' 種'],
   ];
   document.getElementById('sumBody').innerHTML=rows.map(([l,v])=>
     `<div class="sum-row"><span class="sum-label">${l}</span><span class="sum-val">${v}</span></div>`
@@ -1209,6 +1328,102 @@ document.getElementById('btnSaveName').addEventListener('click', () => {
   updateUI();
 });
 
+// ── アクセサリー定義 ──
+// svg(p) の p: {hTop,eyeY,bTop,bMid,bBot,lx,rx,cx}
+const ACCESSORIES = [
+  // ── 頭スロット ──
+  {id:'h_ribbon', name:'ピンクりぼん', slot:'head', rar:'N',
+   svg:(p)=>`<path d="M${p.cx-14} ${p.hTop-4} Q${p.cx-7} ${p.hTop-18} ${p.cx} ${p.hTop-10} Q${p.cx+7} ${p.hTop-18} ${p.cx+14} ${p.hTop-4}" fill="#ff99cc" stroke="#cc3388" stroke-width="2"/><circle cx="${p.cx}" cy="${p.hTop-10}" r="5" fill="#ff3399"/>`},
+  {id:'h_flower', name:'おはな', slot:'head', rar:'N',
+   svg:(p)=>{const y=p.hTop-14;return `<circle cx="${p.cx}" cy="${y}" r="7" fill="#ffdd44"/><circle cx="${p.cx-10}" cy="${y}" r="7" fill="#ff88bb" opacity=".8"/><circle cx="${p.cx+10}" cy="${y}" r="7" fill="#ff88bb" opacity=".8"/><circle cx="${p.cx-5}" cy="${y-9}" r="7" fill="#ff88bb" opacity=".8"/><circle cx="${p.cx+5}" cy="${y-9}" r="7" fill="#ff88bb" opacity=".8"/>`;}},
+  {id:'h_glasses', name:'サングラス', slot:'head', rar:'N',
+   svg:(p)=>{const y=Math.round(p.eyeY);return `<rect x="44" y="${y-6}" width="19" height="12" rx="6" fill="#111" opacity=".9"/><rect x="67" y="${y-6}" width="19" height="12" rx="6" fill="#111" opacity=".9"/><line x1="63" y1="${y}" x2="67" y2="${y}" stroke="#444" stroke-width="2"/><line x1="44" y1="${y}" x2="38" y2="${y-3}" stroke="#444" stroke-width="2"/><line x1="86" y1="${y}" x2="92" y2="${y-3}" stroke="#444" stroke-width="2"/>`;}},
+  {id:'h_santa', name:'サンタぼうし', slot:'head', rar:'N',
+   svg:(p)=>`<polygon points="${p.cx},${p.hTop-34} ${p.cx-25},${p.hTop+8} ${p.cx+25},${p.hTop+8}" fill="#cc0000" stroke="#990000" stroke-width="1.5"/><rect x="${p.cx-26}" y="${p.hTop+4}" width="52" height="10" rx="5" fill="white"/><circle cx="${p.cx}" cy="${p.hTop-34}" r="6.5" fill="white"/>`},
+  {id:'h_devil', name:'あくまのつの', slot:'head', rar:'R',
+   svg:(p)=>`<path d="M${p.cx-20} ${p.hTop+2} L${p.cx-24} ${p.hTop-24} L${p.cx-12} ${p.hTop-8}" fill="#cc2200" stroke="#880000" stroke-width="1.5"/><path d="M${p.cx+20} ${p.hTop+2} L${p.cx+24} ${p.hTop-24} L${p.cx+12} ${p.hTop-8}" fill="#cc2200" stroke="#880000" stroke-width="1.5"/>`},
+  {id:'h_mushroom', name:'キノコ', slot:'head', rar:'R',
+   svg:(p)=>`<ellipse cx="${p.cx}" cy="${p.hTop-8}" rx="28" ry="14" fill="#cc2200" stroke="#881100" stroke-width="2"/><ellipse cx="${p.cx-10}" cy="${p.hTop-12}" rx="5" ry="4" fill="white" opacity=".9"/><ellipse cx="${p.cx+7}" cy="${p.hTop-15}" rx="4" ry="3" fill="white" opacity=".9"/><rect x="${p.cx-8}" y="${p.hTop+2}" width="16" height="12" rx="4" fill="#ffe8d0" stroke="#cc9966" stroke-width="1.5"/>`},
+  {id:'h_wizard', name:'まほうつかいのぼうし', slot:'head', rar:'R',
+   svg:(p)=>`<polygon points="${p.cx},${p.hTop-40} ${p.cx-27},${p.hTop+10} ${p.cx+27},${p.hTop+10}" fill="#441188" stroke="#220066" stroke-width="1.5"/><ellipse cx="${p.cx}" cy="${p.hTop+10}" rx="28" ry="8" fill="#5511aa" stroke="#330088" stroke-width="1.5"/><circle cx="${p.cx}" cy="${p.hTop-40}" r="5.5" fill="#ffee44"/>`},
+  {id:'h_halo', name:'てんしのわ', slot:'head', rar:'SR',
+   svg:(p)=>`<ellipse cx="${p.cx}" cy="${p.hTop-16}" rx="30" ry="10" fill="none" stroke="#FFD700" stroke-width="5.5" opacity=".92"/><ellipse cx="${p.cx}" cy="${p.hTop-16}" rx="30" ry="10" fill="none" stroke="white" stroke-width="2" opacity=".4"/>`},
+  {id:'h_crown', name:'おうかん', slot:'head', rar:'SR',
+   svg:(p)=>`<path d="M${p.cx-25} ${p.hTop+6} L${p.cx-21} ${p.hTop-15} L${p.cx-10} ${p.hTop-4} L${p.cx} ${p.hTop-21} L${p.cx+10} ${p.hTop-4} L${p.cx+21} ${p.hTop-15} L${p.cx+25} ${p.hTop+6} Z" fill="#FFD700" stroke="#cc8800" stroke-width="2"/><circle cx="${p.cx}" cy="${p.hTop-21}" r="4" fill="#ff2222"/><circle cx="${p.cx-16}" cy="${p.hTop-7}" r="3" fill="#2244ff"/><circle cx="${p.cx+16}" cy="${p.hTop-7}" r="3" fill="#22aa22"/>`},
+  // ── ボディスロット ──
+  {id:'b_scarf', name:'マフラー', slot:'body', rar:'N',
+   svg:(p)=>`<path d="M${p.cx-25} ${p.bTop+8} Q${p.cx} ${p.bTop} ${p.cx+25} ${p.bTop+8}" fill="none" stroke="#ee4444" stroke-width="11" stroke-linecap="round" opacity=".9"/><path d="M${p.cx-22} ${p.bTop+12} L${p.cx-26} ${p.bTop+30} L${p.cx-14} ${p.bTop+28}" fill="#cc2222"/>`},
+  {id:'b_medal', name:'メダル', slot:'body', rar:'N',
+   svg:(p)=>{const my=Math.round(p.bTop+(p.bMid-p.bTop)*0.6);return `<line x1="${p.cx}" y1="${p.bTop+6}" x2="${p.cx}" y2="${my-15}" stroke="#cc8800" stroke-width="2.5"/><circle cx="${p.cx}" cy="${my}" r="15" fill="#FFD700" stroke="#cc8800" stroke-width="2.5"/><text x="${p.cx}" y="${my+5}" text-anchor="middle" font-size="14" fill="#cc8800">★</text>`;}},
+  {id:'b_sword', name:'けん', slot:'body', rar:'R',
+   svg:(p)=>{const wx=p.rx+2,wy=p.bTop+12,wh=Math.round((p.bMid-p.bTop)*1.3);return `<line x1="${wx+4}" y1="${wy}" x2="${wx+4}" y2="${wy+wh}" stroke="#c0c0d0" stroke-width="5" stroke-linecap="round"/><path d="M${wx-2} ${wy-2} L${wx+10} ${wy-2} L${wx+4} ${wy-15} Z" fill="#aaaacc" stroke="#888899" stroke-width="1.5"/><rect x="${wx-5}" y="${wy+Math.round(wh*0.28)}" width="18" height="6" rx="3" fill="#cc8800"/>`;}},
+  {id:'b_shield', name:'たて', slot:'body', rar:'R',
+   svg:(p)=>{const sx=p.lx-10,sy=p.bTop+8;return `<path d="M${sx} ${sy} L${sx+22} ${sy} L${sx+24} ${sy+26} L${sx+11} ${sy+40} L${sx-2} ${sy+26} Z" fill="#cc4400" stroke="#882200" stroke-width="2"/><path d="M${sx+3} ${sy+4} L${sx+18} ${sy+4} L${sx+20} ${sy+23} L${sx+11} ${sy+34} L${sx+2} ${sy+23} Z" fill="#ee6633"/><text x="${sx+11}" y="${sy+23}" text-anchor="middle" font-size="11" fill="#ffdd44">⚜</text>`;}},
+  {id:'b_cape', name:'マント', slot:'body', rar:'SR',
+   svg:(p)=>`<path d="M${p.cx-22} ${p.bTop+4} C${p.cx-38} ${p.bTop+60} ${p.cx-33} ${p.bTop+130} ${p.cx-16} ${p.bTop+170}" fill="none" stroke="#990000" stroke-width="28" stroke-linecap="round" opacity=".72"/><path d="M${p.cx+22} ${p.bTop+4} C${p.cx+38} ${p.bTop+60} ${p.cx+33} ${p.bTop+130} ${p.cx+16} ${p.bTop+170}" fill="none" stroke="#cc0000" stroke-width="28" stroke-linecap="round" opacity=".72"/>`},
+  // ── エフェクトスロット ──
+  {id:'e_sparkle', name:'キラキラ', slot:'effect', rar:'N',
+   svg:(p)=>`<text x="8" y="${p.bTop+12}" font-size="15" opacity=".85">✨</text><text x="108" y="${p.bTop+35}" font-size="13" opacity=".8">✨</text><text x="6" y="${p.bMid+18}" font-size="11" opacity=".75">💫</text><text x="110" y="${p.bMid+38}" font-size="11" opacity=".75">💫</text>`},
+  {id:'e_hearts', name:'ハート', slot:'effect', rar:'N',
+   svg:(p)=>`<text x="9" y="${p.bTop+16}" font-size="15" opacity=".82">💕</text><text x="106" y="${p.bTop+38}" font-size="13" opacity=".78">💕</text><text x="11" y="${p.bMid+28}" font-size="10" opacity=".72">💗</text>`},
+  {id:'e_stars', name:'ほし', slot:'effect', rar:'N',
+   svg:(p)=>`<text x="10" y="${p.bTop+18}" font-size="14" opacity=".85">⭐</text><text x="107" y="${p.bTop+42}" font-size="12" opacity=".75">⭐</text><text x="8" y="${p.bMid+22}" font-size="10" opacity=".7">✦</text><text x="108" y="${p.bMid-8}" font-size="10" opacity=".7">✦</text>`},
+  {id:'e_lightning', name:'かみなり', slot:'effect', rar:'R',
+   svg:(p)=>`<path d="M12 ${p.bTop+8} L22 ${p.bTop+42} L16 ${p.bTop+42} L26 ${p.bTop+78}" fill="none" stroke="#ffee00" stroke-width="3" opacity=".88"/><path d="M118 ${p.bTop+8} L108 ${p.bTop+42} L114 ${p.bTop+42} L104 ${p.bTop+78}" fill="none" stroke="#ffee00" stroke-width="3" opacity=".88"/>`},
+  {id:'e_flames', name:'ほのお', slot:'effect', rar:'R',
+   svg:(p)=>`<path d="M${p.cx-30} ${p.bBot+22} Q${p.cx-35} ${p.bBot-18} ${p.cx-22} ${p.bBot-52} Q${p.cx-24} ${p.bBot-20} ${p.cx-14} ${p.bBot-38}" fill="#ff6600" opacity=".72"/><path d="M${p.cx+30} ${p.bBot+22} Q${p.cx+35} ${p.bBot-18} ${p.cx+22} ${p.bBot-52} Q${p.cx+24} ${p.bBot-20} ${p.cx+14} ${p.bBot-38}" fill="#ff8800" opacity=".72"/>`},
+  {id:'e_poison', name:'どく', slot:'effect', rar:'R',
+   svg:(p)=>`<circle cx="14" cy="${p.bTop+32}" r="8" fill="#88ff44" opacity=".72"/><circle cx="116" cy="${p.bTop+58}" r="6" fill="#44ff44" opacity=".68"/><circle cx="11" cy="${p.bMid+22}" r="5" fill="#88ff44" opacity=".62"/><circle cx="119" cy="${p.bMid-8}" r="7" fill="#44ff88" opacity=".66"/>`},
+  {id:'e_rainbow', name:'にじオーラ', slot:'effect', rar:'SR',
+   svg:(p)=>`<defs><linearGradient id="accRb" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff4444"/><stop offset="33%" stop-color="#44cc44"/><stop offset="66%" stop-color="#4488ff"/><stop offset="100%" stop-color="#aa44ff"/></linearGradient></defs><ellipse cx="${p.cx}" cy="${p.bMid}" rx="72" ry="135" fill="none" stroke="url(#accRb)" stroke-width="8" opacity=".2"/><ellipse cx="${p.cx}" cy="${p.bMid}" rx="62" ry="118" fill="none" stroke="url(#accRb)" stroke-width="4" opacity=".15"/>`},
+];
+
+// ── アクセサリー状態 ──
+let ownedAcc   = new Set(JSON.parse(localStorage.getItem('chin_acc')||'[]'));
+let equippedAcc = JSON.parse(localStorage.getItem('chin_equip')||'{"head":null,"body":null,"effect":null}');
+function saveAcc(){
+  localStorage.setItem('chin_acc',JSON.stringify([...ownedAcc]));
+  localStorage.setItem('chin_equip',JSON.stringify(equippedAcc));
+}
+
+function getAccPts(form){
+  const sz = form.si===0 ? {hcy:145,hry:72,hrx:50,sx:15,sy:73,sw:100,sh:145} : SZ[form.si];
+  return {
+    hTop: sz.hcy-sz.hry, eyeY: sz.hcy-sz.hry*0.28,
+    bTop: sz.sy, bMid: sz.sy+sz.sh*0.35, bBot: sz.sy+sz.sh,
+    lx: sz.sx-18, rx: sz.sx+sz.sw+8, cx:65
+  };
+}
+
+function renderEquippedAcc(form){
+  const p=getAccPts(form); let svg='';
+  for(const slot of ['effect','body','head']){ // effect first (behind)
+    const id=equippedAcc[slot]; if(!id) continue;
+    const a=ACCESSORIES.find(x=>x.id===id); if(a) svg+=a.svg(p);
+  }
+  return svg;
+}
+
+function accPreviewSVG(acc, isEquipped){
+  // 固定参照点でのプレビュー
+  const p={hTop:42,eyeY:55,bTop:68,bMid:110,bBot:165,lx:30,rx:90,cx:65};
+  const bg=isEquipped?'#3a1040':'#1a0828';
+  return `<svg width="48" height="60" viewBox="0 0 130 200" xmlns="http://www.w3.org/2000/svg"><rect width="130" height="200" rx="8" fill="${bg}"/>${acc.svg(p)}</svg>`;
+}
+
+// ドロップ抽選
+const ACC_RARITY_TABLE=[
+  [8,2,0],[7,3,0],[5,5,0],[3,7,0],
+  [2,5,3],[1,4,5],[0,3,7],[0,1,9]
+];
+function dropAccessory(npcIdx){
+  const [n,r,sr]=ACC_RARITY_TABLE[Math.min(npcIdx,7)];
+  const total=n+r+sr, rand=Math.floor(Math.random()*total);
+  const rar=rand<n?'N':rand<n+r?'R':'SR';
+  const pool=ACCESSORIES.filter(a=>a.rar===rar);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
 // ── NPC定義 ──
 const NPCS = [
   { id:'npc1', name:'チビスケ', diff:'⭐', desc:'最初の相手。手加減してくれる',
@@ -1361,6 +1576,20 @@ async function startBattle(npc) {
     resEl.className = 'b-result win';
     resEl.textContent = `🎉 ${playerName} の勝利！`;
     battleWins++; localStorage.setItem('b_wins', battleWins);
+    // アクセサリードロップ
+    const npcIdx = NPCS.indexOf(npc);
+    const dropped = dropAccessory(npcIdx);
+    if (dropped) {
+      const isNew = !ownedAcc.has(dropped.id);
+      ownedAcc.add(dropped.id); saveAcc();
+      setTimeout(()=>{
+        const el=document.createElement('div');
+        el.className='acc-drop-banner';
+        el.innerHTML=`💍 ${isNew?'NEW! ':''}${dropped.name}をゲット！<br><span style="font-size:.85rem;color:#ffaadd">${dropped.rar==='SR'?'★★★ 超レア！':dropped.rar==='R'?'★★ レア！':'★ ノーマル'}</span>`;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),2600);
+      },1800);
+    }
   } else if (result.winner === 'npc') {
     resEl.className = 'b-result lose';
     resEl.textContent = `💀 ${npc.name} の勝利…`;
