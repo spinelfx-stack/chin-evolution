@@ -135,13 +135,32 @@ body{
 .t-pending{background:#1a3a00;border:1.5px solid #66ff44;border-radius:10px;padding:.4rem .6rem;margin-bottom:.5rem;font-size:.78rem;color:#aaff44;text-align:center}
 .t-bonus-sum{font-size:.68rem;color:#66aa66;text-align:center;margin-top:.3rem}
 
-/* ── 命名 ── */
-.name-row{display:flex;align-items:center;gap:.4rem;margin:.15rem 0}
-.name-input{font-size:.85rem;padding:.25rem .55rem;border:1.5px solid #ffaad0;border-radius:999px;
-  width:120px;font-family:inherit;color:#cc2266;background:#fff8fc;outline:none}
-.name-input:focus{border-color:#ff4499}
-.name-save{font-size:.75rem;padding:.22rem .65rem;border:none;border-radius:999px;
-  background:#ff66aa;color:#fff;cursor:pointer;font-family:inherit}
+/* ── 命名（インライン編集ボタン） ── */
+.form-name-row{display:flex;align-items:center;gap:.4rem;justify-content:center;min-height:1.6rem}
+.name-edit-btn{background:none;border:none;cursor:pointer;font-size:.9rem;opacity:.6;padding:.1rem .2rem;line-height:1}
+.name-edit-btn:hover{opacity:1}
+.nick-label{font-size:.72rem;color:#cc88aa;font-style:italic}
+
+/* ── アクションバー ── */
+.action-bar{width:100%;max-width:360px;display:flex;flex-direction:column;gap:.35rem;margin-top:.35rem}
+.main-actions-row{display:flex;gap:.5rem;justify-content:center;align-items:center}
+.auto-cluster{display:flex;gap:.25rem;align-items:center}
+.icon-bar{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap}
+.icon-btn{
+  display:flex;flex-direction:column;align-items:center;gap:.06rem;
+  background:rgba(255,100,180,.1);border:1.5px solid rgba(255,100,180,.22);
+  border-radius:12px;padding:.38rem .45rem;cursor:pointer;min-width:46px;
+  font-size:1.2rem;transition:background .18s,transform .1s;font-family:inherit;
+  position:relative
+}
+.icon-btn:active{transform:scale(.91);background:rgba(255,100,180,.22)}
+.icon-btn .ib-label{font-size:.56rem;color:#cc6699;font-weight:bold;line-height:1}
+.icon-btn .train-badge{position:absolute;top:-4px;right:-4px;background:#ff3300;color:#fff;
+  border-radius:50%;width:13px;height:13px;font-size:.52rem;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.reincarn-compact{display:flex;align-items:center;gap:.5rem;justify-content:center}
+.btn-reincarn-sm{padding:.35rem 1rem;font-size:.82rem;border:none;border-radius:999px;
+  background:linear-gradient(135deg,#cc44ff,#6600cc);color:#fff;cursor:pointer;font-family:inherit;
+  box-shadow:0 3px 10px rgba(150,0,255,.4);animation:glowPulse 2s infinite;font-weight:bold}
 
 /* ── 発射 ── */
 .btn-shoot{background:linear-gradient(135deg,#4488ff,#1133cc);color:#fff;
@@ -154,9 +173,9 @@ body{
   70%{transform:scaleY(.96) translateY(2px)}
   100%{transform:scaleY(1) translateY(0)}
 }
-.drop{position:fixed;background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.7),#4488ff 40%);
+.drop{position:fixed;background:radial-gradient(circle at 38% 32%,rgba(255,255,255,.95),#e8e8ff 50%,#ccccee 100%);
   border-radius:50%;pointer-events:none;z-index:50}
-.dopyu-text{position:fixed;font-weight:bold;color:#4488ff;
+.dopyu-text{position:fixed;font-weight:bold;color:#aaaaff;
   animation:dopyuPop 1.4s cubic-bezier(.2,.8,.4,1) forwards;z-index:100;pointer-events:none;white-space:nowrap;
   font-family:'Hiragino Maru Gothic Pro','Rounded Mplus 1c',sans-serif}
 @keyframes dopyuPop{
@@ -282,49 +301,62 @@ body{
 </style>
 </head>
 <body>
+<!-- ヘッダー -->
 <div class="title">🍆 ちんちん進化クリッカー 🍆</div>
 <div class="stage-label" id="stageLbl"></div>
-<div class="form-name" id="formName"></div>
-<div class="name-row">
-  <input class="name-input" id="nicknameInput" maxlength="12" placeholder="ちんに名前をつける">
-  <button class="name-save" id="btnSaveName">決定</button>
+<div class="form-name-row">
+  <div class="form-name" id="formName"></div>
+  <button class="name-edit-btn" id="btnNameEdit" title="名前をつける">✏️</button>
 </div>
+<div id="nickDisplay" class="nick-label"></div>
 <div class="next-info" id="nextInfo"></div>
 <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
 
+<!-- キャラクター -->
 <div class="stage-area" id="stageArea">
   <svg class="character" id="character" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">
     <g id="charG"></g>
   </svg>
 </div>
 
+<!-- ステータス・カウント -->
 <div class="stat-row" id="statRow"></div>
+<div class="count-display">ぺちぺち <span id="countEl">0</span>回</div>
+
+<!-- 進化ボタン（条件付き） -->
 <div id="evolveReadyRow" class="evolve-ready-row hidden">
-  <button class="btn btn-evolve" id="btnEvolve">✨ 進化できます！ タップで進化</button>
+  <button class="btn btn-evolve" id="btnEvolve">✨ 進化できます！</button>
   <div class="evolve-hint" id="evolveHint"></div>
 </div>
-<div class="count-display">ぺちぺち: <span id="countEl">0</span>回</div>
-<div class="hint">タップ / クリックでぺちぺち</div>
 
-<div class="controls">
-  <button class="btn btn-shoot" id="btnShoot">💦 発射！</button>
-  <button class="btn btn-auto" id="btnAuto">▶ オート</button>
-  <select class="speed-sel" id="speedSel">
-    <option value="333">遅</option>
-    <option value="100" selected>普</option>
-    <option value="40">速</option>
-  </select>
-  <button class="btn btn-reset" id="btnReset">↺ リセット</button>
-  <button class="btn btn-zukan" id="btnZukan">📖 図鑑</button>
-  <button class="btn btn-battle" id="btnBattle">⚔️ 対戦</button>
-  <button class="btn btn-train" id="btnTrain">💪 訓練<span class="train-badge hidden" id="trainBadge">!</span></button>
-  <button class="btn btn-acc" id="btnAcc">💍 アクセサリー</button>
-  <button class="btn btn-summary" id="btnSummary">📊 サマリー</button>
-</div>
-
-<div class="reincarn-row" id="reincarnRow">
-  <button class="btn btn-reincarn" id="btnReincarn">🔄 転生する</button>
-  <div class="reincarn-info" id="reincarnInfo"></div>
+<!-- アクションバー -->
+<div class="action-bar">
+  <!-- 発射 + オート -->
+  <div class="main-actions-row">
+    <button class="btn btn-shoot" id="btnShoot">💦 発射！</button>
+    <div class="auto-cluster">
+      <button class="btn btn-auto" id="btnAuto">▶ オート</button>
+      <select class="speed-sel" id="speedSel">
+        <option value="333">遅</option>
+        <option value="100" selected>普</option>
+        <option value="40">速</option>
+      </select>
+    </div>
+  </div>
+  <!-- アイコンバー -->
+  <div class="icon-bar">
+    <button class="icon-btn" id="btnZukan">📖<span class="ib-label">図鑑</span></button>
+    <button class="icon-btn" id="btnBattle">⚔️<span class="ib-label">対戦</span></button>
+    <button class="icon-btn" id="btnTrain">💪<span class="ib-label">訓練</span><span class="train-badge hidden" id="trainBadge">!</span></button>
+    <button class="icon-btn" id="btnAcc">💍<span class="ib-label">装備</span></button>
+    <button class="icon-btn" id="btnSummary">📊<span class="ib-label">実績</span></button>
+    <button class="icon-btn" id="btnReset">↺<span class="ib-label">リセット</span></button>
+  </div>
+  <!-- 転生（Stage6以上で表示） -->
+  <div class="reincarn-compact hidden" id="reincarnRow">
+    <button class="btn-reincarn-sm" id="btnReincarn">🔄 転生する</button>
+    <div class="reincarn-info" id="reincarnInfo"></div>
+  </div>
 </div>
 
 <!-- アクセサリーモーダル -->
@@ -950,11 +982,11 @@ function updateUI(){
   // 転生ボタン
   const rRow=document.getElementById('reincarnRow');
   if(si>=6){
-    rRow.classList.add('visible');
+    rRow.classList.remove('hidden');
     document.getElementById('reincarnInfo').textContent=
       `転生${reincarnations}回済 / 転生するとステータス+${(getTotalStats(currentForm)*0.01).toFixed(1)}%ボーナス獲得`;
   } else {
-    rRow.classList.remove('visible');
+    rRow.classList.add('hidden');
   }
 }
 
@@ -1416,12 +1448,15 @@ document.getElementById('btnShoot').addEventListener('touchstart', e => {
 // ── 命名 ──
 let chinNickname = localStorage.getItem('chin_nick') || '';
 function applyNickname() {
-  document.getElementById('nicknameInput').value = chinNickname;
+  const el = document.getElementById('nickDisplay');
+  el.textContent = chinNickname ? `「${chinNickname}」` : '';
 }
-document.getElementById('btnSaveName').addEventListener('click', () => {
-  const v = document.getElementById('nicknameInput').value.trim();
-  chinNickname = v;
-  localStorage.setItem('chin_nick', v);
+document.getElementById('btnNameEdit').addEventListener('click', () => {
+  const v = prompt('ちんの名前を入力（最大12文字）', chinNickname);
+  if (v === null) return;
+  chinNickname = v.trim().slice(0, 12);
+  localStorage.setItem('chin_nick', chinNickname);
+  applyNickname();
   updateUI();
 });
 
