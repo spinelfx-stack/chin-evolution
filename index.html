@@ -516,6 +516,7 @@ ${f.extras||''}`;
 }
 
 function chinSVG(sz, f) {
+  const si=f.si;
   const {hcy,hrx,hry,sx,sy,sw,sh,sr,b1,b2,by,brx,bry}=sz;
   const fill=f.fill,stroke=f.stroke,light=f.light,ec=f.eyeCol||'#333',expr=f.expr||'cute';
   const ey=Rd(hcy-hry*.28),eo=Rd(hrx*.46),er=Rd(hrx*.3);
@@ -532,12 +533,140 @@ function chinSVG(sz, f) {
   const mouth=`<path d="M${Rd(65-eo*.7)} ${my} Q65 ${Rd(mq)} ${Rd(65+eo*.7)} ${my}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round"/>`;
   const blush=expr==='cute'?`<ellipse cx="${Rd(65-eo*1.8)}" cy="${Rd(ey+er*.4)}" rx="${Rd(er*1.1)}" ry="${Rd(er*.65)}" fill="${light}" opacity=".65"/>
 <ellipse cx="${Rd(65+eo*1.8)}" cy="${Rd(ey+er*.4)}" rx="${Rd(er*1.1)}" ry="${Rd(er*.65)}" fill="${light}" opacity=".65"/>`:'';
+
+  // ツノ (stage4+ fierce)
+  let horns='';
+  if(expr==='fierce'&&si>=4){
+    const hty=Rd(hcy-hry);
+    horns=`<path d="M${Rd(65-hrx*.38)} ${Rd(hty+4)} L${Rd(65-hrx*.56)} ${Rd(hty-16)} L${Rd(65-hrx*.18)} ${Rd(hty+2)}" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>
+<path d="M${Rd(65+hrx*.38)} ${Rd(hty+4)} L${Rd(65+hrx*.56)} ${Rd(hty-16)} L${Rd(65+hrx*.18)} ${Rd(hty+2)}" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>`;
+  }
+
+  // 翼 (stage6+ 胴体より先に描画して後ろに見せる)
+  let wings='';
+  if(si>=6){
+    const wx=Rd(sx-2),wxr=Rd(sx+sw+2),wy=Rd(sy+sh*.1);
+    if(si===6){
+      wings=`
+<path d="M${wx} ${Rd(wy+8)} Q${Rd(wx-30)} ${Rd(wy-20)} ${Rd(wx-24)} ${Rd(wy+38)} Q${Rd(wx-12)} ${Rd(wy+28)} ${wx} ${Rd(wy+20)}" fill="${light}" stroke="${stroke}" stroke-width="2" opacity=".82"/>
+<path d="M${wx} ${Rd(wy+20)} Q${Rd(wx-22)} ${Rd(wy+22)} ${Rd(wx-18)} ${Rd(wy+52)} Q${Rd(wx-8)} ${Rd(wy+42)} ${wx} ${Rd(wy+32)}" fill="${light}" stroke="${stroke}" stroke-width="1.8" opacity=".7"/>
+<path d="M${wxr} ${Rd(wy+8)} Q${Rd(wxr+30)} ${Rd(wy-20)} ${Rd(wxr+24)} ${Rd(wy+38)} Q${Rd(wxr+12)} ${Rd(wy+28)} ${wxr} ${Rd(wy+20)}" fill="${light}" stroke="${stroke}" stroke-width="2" opacity=".82"/>
+<path d="M${wxr} ${Rd(wy+20)} Q${Rd(wxr+22)} ${Rd(wy+22)} ${Rd(wxr+18)} ${Rd(wy+52)} Q${Rd(wxr+8)} ${Rd(wy+42)} ${wxr} ${Rd(wy+32)}" fill="${light}" stroke="${stroke}" stroke-width="1.8" opacity=".7"/>`;
+    } else if(si===7){
+      wings=`
+<path d="M${wx} ${Rd(wy+5)} Q${Rd(wx-52)} ${Rd(wy-22)} ${Rd(wx-40)} ${Rd(wy+72)} Q${Rd(wx-22)} ${Rd(wy+55)} ${wx} ${Rd(wy+30)}" fill="white" stroke="#e0d898" stroke-width="2.5" opacity=".88"/>
+<path d="M${wx} ${Rd(wy+30)} Q${Rd(wx-42)} ${Rd(wy+42)} ${Rd(wx-28)} ${Rd(wy+102)} Q${Rd(wx-14)} ${Rd(wy+88)} ${wx} ${Rd(wy+58)}" fill="white" stroke="#e0d898" stroke-width="2" opacity=".75"/>
+<path d="M${wxr} ${Rd(wy+5)} Q${Rd(wxr+52)} ${Rd(wy-22)} ${Rd(wxr+40)} ${Rd(wy+72)} Q${Rd(wxr+22)} ${Rd(wy+55)} ${wxr} ${Rd(wy+30)}" fill="white" stroke="#e0d898" stroke-width="2.5" opacity=".88"/>
+<path d="M${wxr} ${Rd(wy+30)} Q${Rd(wxr+42)} ${Rd(wy+42)} ${Rd(wxr+28)} ${Rd(wy+102)} Q${Rd(wxr+14)} ${Rd(wy+88)} ${wxr} ${Rd(wy+58)}" fill="white" stroke="#e0d898" stroke-width="2" opacity=".75"/>`;
+    } else if(si===8){
+      wings=`
+<path d="M${wx} ${Rd(wy)} L${Rd(wx-48)} ${Rd(wy-42)} L${Rd(wx-55)} ${Rd(wy+28)} L${Rd(wx-26)} ${Rd(wy+78)} Z" fill="${fill}" stroke="${stroke}" stroke-width="2.5" opacity=".85"/>
+<line x1="${wx}" y1="${Rd(wy)}" x2="${Rd(wx-48)}" y2="${Rd(wy-42)}" stroke="${stroke}" stroke-width="2" opacity=".8"/>
+<line x1="${Rd(wx-18)}" y1="${Rd(wy-18)}" x2="${Rd(wx-36)}" y2="${Rd(wy+55)}" stroke="${stroke}" stroke-width="1.5" opacity=".55"/>
+<line x1="${Rd(wx-8)}" y1="${Rd(wy+5)}" x2="${Rd(wx-24)}" y2="${Rd(wy+62)}" stroke="${stroke}" stroke-width="1.5" opacity=".5"/>
+<path d="M${wxr} ${Rd(wy)} L${Rd(wxr+48)} ${Rd(wy-42)} L${Rd(wxr+55)} ${Rd(wy+28)} L${Rd(wxr+26)} ${Rd(wy+78)} Z" fill="${fill}" stroke="${stroke}" stroke-width="2.5" opacity=".85"/>
+<line x1="${wxr}" y1="${Rd(wy)}" x2="${Rd(wxr+48)}" y2="${Rd(wy-42)}" stroke="${stroke}" stroke-width="2" opacity=".8"/>
+<line x1="${Rd(wxr+18)}" y1="${Rd(wy-18)}" x2="${Rd(wxr+36)}" y2="${Rd(wy+55)}" stroke="${stroke}" stroke-width="1.5" opacity=".55"/>
+<line x1="${Rd(wxr+8)}" y1="${Rd(wy+5)}" x2="${Rd(wxr+24)}" y2="${Rd(wy+62)}" stroke="${stroke}" stroke-width="1.5" opacity=".5"/>`;
+    } else if(si===9){
+      wings=`
+<path d="M${wx} ${Rd(wy+8)} Q${Rd(wx-60)} ${Rd(wy-50)} ${Rd(wx-18)} ${Rd(wy+88)}" fill="none" stroke="${light}" stroke-width="20" opacity=".32" stroke-linecap="round"/>
+<path d="M${wx} ${Rd(wy+8)} Q${Rd(wx-46)} ${Rd(wy-32)} ${Rd(wx-14)} ${Rd(wy+68)}" fill="none" stroke="${fill}" stroke-width="9" opacity=".62" stroke-linecap="round"/>
+<path d="M${wx} ${Rd(wy+8)} Q${Rd(wx-30)} ${Rd(wy-12)} ${Rd(wx-9)} ${Rd(wy+46)}" fill="none" stroke="${light}" stroke-width="4" opacity=".9" stroke-linecap="round"/>
+<path d="M${wxr} ${Rd(wy+8)} Q${Rd(wxr+60)} ${Rd(wy-50)} ${Rd(wxr+18)} ${Rd(wy+88)}" fill="none" stroke="${light}" stroke-width="20" opacity=".32" stroke-linecap="round"/>
+<path d="M${wxr} ${Rd(wy+8)} Q${Rd(wxr+46)} ${Rd(wy-32)} ${Rd(wxr+14)} ${Rd(wy+68)}" fill="none" stroke="${fill}" stroke-width="9" opacity=".62" stroke-linecap="round"/>
+<path d="M${wxr} ${Rd(wy+8)} Q${Rd(wxr+30)} ${Rd(wy-12)} ${Rd(wxr+9)} ${Rd(wy+46)}" fill="none" stroke="${light}" stroke-width="4" opacity=".9" stroke-linecap="round"/>`;
+    }
+  }
+
+  // 腕 (stage3+)
+  let arms='';
+  if(si>=3){
+    const ax=Rd(sx-2),axr=Rd(sx+sw+2),ay=Rd(sy+sh*.1);
+    if(si===3){
+      const aw=Rd(hrx*.3),ah=Rd(sh*.2);
+      arms=`
+<rect x="${Rd(ax-aw)}" y="${ay}" width="${aw}" height="${ah}" rx="${Rd(aw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+<rect x="${axr}" y="${ay}" width="${aw}" height="${ah}" rx="${Rd(aw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>`;
+    } else if(si===4){
+      const maw=Rd(hrx*.36),mah=Rd(sh*.22),bo=Rd(sh*.08);
+      arms=`
+<rect x="${Rd(ax-maw)}" y="${ay}" width="${maw}" height="${mah}" rx="${Rd(maw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+<ellipse cx="${Rd(ax-maw*.5)}" cy="${Rd(ay+bo)}" rx="${Rd(maw*.62+2)}" ry="${Rd(mah*.3)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<rect x="${axr}" y="${ay}" width="${maw}" height="${mah}" rx="${Rd(maw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+<ellipse cx="${Rd(axr+maw*.5)}" cy="${Rd(ay+bo)}" rx="${Rd(maw*.62+2)}" ry="${Rd(mah*.3)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    } else {
+      const faw=Rd(hrx*.28),uH=Rd(sh*.22),lH=Rd(sh*.2);
+      arms=`
+<rect x="${Rd(ax-faw)}" y="${ay}" width="${faw}" height="${uH}" rx="${Rd(faw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<rect x="${Rd(ax-faw+1)}" y="${Rd(ay+uH-3)}" width="${Rd(faw-2)}" height="${lH}" rx="${Rd(faw*.45)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<ellipse cx="${Rd(ax-faw*.5)}" cy="${Rd(ay+uH+lH)}" rx="${Rd(faw*.65)}" ry="${Rd(faw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<rect x="${axr}" y="${ay}" width="${faw}" height="${uH}" rx="${Rd(faw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<rect x="${Rd(axr+1)}" y="${Rd(ay+uH-3)}" width="${Rd(faw-2)}" height="${lH}" rx="${Rd(faw*.45)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<ellipse cx="${Rd(axr+faw*.5)}" cy="${Rd(ay+uH+lH)}" rx="${Rd(faw*.65)}" ry="${Rd(faw*.5)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    }
+  }
+
+  // フォーム固有シルエット変形
+  let shapePreHead='',shapeTail='',shapePostBody='';
+  const shp=f.shape;
+  if(shp==='bunny'){
+    const ecY=Rd(hcy-hry-14),el=Rd(65-hrx*.4),er2=Rd(65+hrx*.4),ew=Rd(hrx*.22);
+    shapePreHead=`
+<ellipse cx="${el}" cy="${ecY}" rx="${ew}" ry="15" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>
+<ellipse cx="${el}" cy="${ecY}" rx="${Rd(ew*.5)}" ry="10" fill="${light}" opacity=".75"/>
+<ellipse cx="${er2}" cy="${ecY}" rx="${ew}" ry="15" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>
+<ellipse cx="${er2}" cy="${ecY}" rx="${Rd(ew*.5)}" ry="10" fill="${light}" opacity=".75"/>`;
+  } else if(shp==='cat'){
+    const et=Rd(hcy-hry-1);
+    shapePreHead=`
+<path d="M${Rd(65-hrx*.55)} ${Rd(et+3)} L${Rd(65-hrx*.35)} ${Rd(et-14)} L${Rd(65-hrx*.15)} ${Rd(et+2)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<path d="M${Rd(65+hrx*.15)} ${Rd(et+2)} L${Rd(65+hrx*.35)} ${Rd(et-14)} L${Rd(65+hrx*.55)} ${Rd(et+3)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+  } else if(shp==='spike'){
+    const st=Rd(hcy-hry+1);
+    shapePreHead=`
+<path d="M${Rd(65-hrx*.5)} ${st} L${Rd(65-hrx*.35)} ${Rd(st-15)} L${Rd(65-hrx*.18)} ${st}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<path d="M${Rd(65-hrx*.08)} ${Rd(st-1)} L65 ${Rd(st-18)} L${Rd(65+hrx*.08)} ${Rd(st-1)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+<path d="M${Rd(65+hrx*.18)} ${st} L${Rd(65+hrx*.35)} ${Rd(st-15)} L${Rd(65+hrx*.5)} ${st}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+  }
+  if(shp==='devil'){
+    // しっぽは体の右端から外側へ曲がる（後で体の上に描画）
+    const tx=Rd(sx+sw-2),ty=Rd(sy+sh*.6);
+    shapeTail=`
+<path d="M${tx} ${ty} Q${Rd(tx+18)} ${Rd(ty+12)} ${Rd(tx+14)} ${Rd(ty+30)} Q${Rd(tx+10)} ${Rd(ty+46)} ${Rd(tx+24)} ${Rd(ty+50)}" fill="none" stroke="${stroke}" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M${Rd(tx+24)} ${Rd(ty+50)} L${Rd(tx+30)} ${Rd(ty+42)} L${Rd(tx+16)} ${Rd(ty+42)} Z" fill="${fill}" stroke="${stroke}" stroke-width="1.8"/>`;
+  }
+  if(shp==='round'){
+    const ry2=Rd(sy+sh*.56);
+    shapePostBody=`
+<ellipse cx="65" cy="${ry2}" rx="${Rd(sw*.62+2)}" ry="${Rd(sh*.3)}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+<ellipse cx="65" cy="${Rd(ry2-sh*.04)}" rx="${Rd(sw*.42)}" ry="${Rd(sh*.15)}" fill="${light}" opacity=".28"/>`;
+  } else if(shp==='antenna'){
+    const ab=Rd(hcy-hry);
+    shapePostBody=`
+<line x1="65" y1="${ab}" x2="65" y2="${Rd(ab-18)}" stroke="${stroke}" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="65" cy="${Rd(ab-21)}" r="4.5" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+  } else if(shp==='crystal'){
+    const cy0=Rd(sy+sh*.28);
+    shapePostBody=`
+<path d="M${Rd(sx-3)} ${cy0} L${Rd(sx-15)} ${Rd(cy0-16)} L${Rd(sx-3)} ${Rd(cy0-10)} Z" fill="${light}" stroke="${stroke}" stroke-width="1.5" opacity=".88"/>
+<path d="M${Rd(sx+sw+3)} ${cy0} L${Rd(sx+sw+15)} ${Rd(cy0-16)} L${Rd(sx+sw+3)} ${Rd(cy0-10)} Z" fill="${light}" stroke="${stroke}" stroke-width="1.5" opacity=".88"/>
+<path d="M${Rd(sx-2)} ${Rd(cy0+30)} L${Rd(sx-10)} ${Rd(cy0+16)} L${Rd(sx-2)} ${Rd(cy0+22)} Z" fill="${light}" stroke="${stroke}" stroke-width="1.2" opacity=".72"/>
+<path d="M${Rd(sx+sw+2)} ${Rd(cy0+30)} L${Rd(sx+sw+10)} ${Rd(cy0+16)} L${Rd(sx+sw+2)} ${Rd(cy0+22)} Z" fill="${light}" stroke="${stroke}" stroke-width="1.2" opacity=".72"/>`;
+  }
+
   return `
+${wings}
 ${f.topDeco||''}
+${horns}
 <ellipse cx="${b1}" cy="${by}" rx="${brx}" ry="${bry}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
 <ellipse cx="${b2}" cy="${by}" rx="${brx}" ry="${bry}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+${arms}
+${shapePreHead}
 <ellipse cx="65" cy="${hcy}" rx="${hrx}" ry="${hry}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
 <rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" rx="${sr}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+${shapeTail}
+${shapePostBody}
 <ellipse cx="53" cy="${Rd(hcy-hry*.2)}" rx="${Rd(hrx*.5)}" ry="${Rd(hry*.38)}" fill="${light}" opacity=".22"/>
 <path d="M${sx-1} ${jy} Q65 ${sy+2} ${sx+sw+1} ${jy}" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round"/>
 ${f.extras||''}
@@ -584,21 +713,21 @@ const FORMS = [
   // Stage 1 ちびちん (total≈50)
   {id:'s1a',si:1,sn:'ちびちん',name:'ノーマルちびちん',rar:'N',
    desc:'かわいいちびちんです',fill:'#ffb7c5',stroke:'#e08090',light:'#ffd5e0',
-   expr:'cute',bg:['#ffd8ec','#fff0e8'],stats:{h:12,a:10,d:10,s:9,m:9}},
+   shape:'bunny',expr:'cute',bg:['#ffd8ec','#fff0e8'],stats:{h:12,a:10,d:10,s:9,m:9}},
   {id:'s1b',si:1,sn:'ちびちん',name:'みずいろちびちん',rar:'N',
    desc:'さわやかな水色',fill:'#90c8f0',stroke:'#4488cc',light:'#c0e4f8',
    expr:'cute',bg:['#d0eaff','#eef8ff'],stats:{h:10,a:8,d:12,s:12,m:8}},
   {id:'s1c',si:1,sn:'ちびちん',name:'みかんちびちん',rar:'R',
    desc:'オレンジ色でかわいい',fill:'#ffaa55',stroke:'#cc6610',light:'#ffcc88',
-   expr:'cute',bg:['#ffe8cc','#fff4e8'],stats:{h:11,a:13,d:8,s:10,m:8},
+   shape:'round',expr:'cute',bg:['#ffe8cc','#fff4e8'],stats:{h:11,a:13,d:8,s:10,m:8},
    extras:`<text x="50" y="100" font-size="8" opacity=".7">✦</text>`},
   {id:'s1d',si:1,sn:'ちびちん',name:'くろいちびちん',rar:'SR',
    desc:'レアな黒いちびちん',fill:'#443355',stroke:'#221133',light:'#886699',
-   eyeCol:'#ff88cc',expr:'cute',bg:['#e0d0f0','#f0e0ff'],stats:{h:9,a:16,d:8,s:9,m:8}},
+   shape:'spike',eyeCol:'#ff88cc',expr:'cute',bg:['#e0d0f0','#f0e0ff'],stats:{h:9,a:16,d:8,s:9,m:8}},
   // 特殊条件: よるのちびちん
   {id:'s1sp',si:1,sn:'ちびちん',name:'よるのちびちん',rar:'SP',
    desc:'深夜に目覚める神秘のちびちん',fill:'#3322aa',stroke:'#110066',light:'#7766cc',
-   eyeCol:'#cc99ff',expr:'cute',bg:['#1a1040','#0a0820'],stats:{h:10,a:18,d:8,s:13,m:6},
+   shape:'cat',eyeCol:'#cc99ff',expr:'cute',bg:['#1a1040','#0a0820'],stats:{h:10,a:18,d:8,s:13,m:6},
    cond:{type:'time',hours:[22,23,0,1,2,3]},
    condHint:'💡 深夜(22時〜4時)に進化すると出会える'},
   {id:'s1sp2',si:1,sn:'ちびちん',name:'つきようびちびちん',rar:'SP',
@@ -613,25 +742,25 @@ const FORMS = [
   // Stage 2 ふつうちん (total≈80)
   {id:'s2a',si:2,sn:'ふつうちん',name:'ノーマルちん',rar:'N',
    desc:'スタンダードなちん',fill:'#ff69b4',stroke:'#cc2280',light:'#ffaacc',
-   expr:'neutral',bg:['#ffc0e0','#ffead8'],stats:{h:18,a:17,d:16,s:15,m:14}},
+   shape:'bunny',expr:'neutral',bg:['#ffc0e0','#ffead8'],stats:{h:18,a:17,d:16,s:15,m:14}},
   {id:'s2b',si:2,sn:'ふつうちん',name:'むらさきちん',rar:'N',
    desc:'神秘的な紫',fill:'#c080e0',stroke:'#7030b0',light:'#e0b0ff',
-   expr:'neutral',bg:['#e8d0ff','#f8eeff'],stats:{h:15,a:20,d:15,s:16,m:14}},
+   shape:'cat',expr:'neutral',bg:['#e8d0ff','#f8eeff'],stats:{h:15,a:20,d:15,s:16,m:14}},
   {id:'s2c',si:2,sn:'ふつうちん',name:'みどりちん',rar:'R',
    desc:'珍しいみどり色',fill:'#88cc88',stroke:'#338833',light:'#bbeeaa',
-   expr:'cute',bg:['#d0f0d0','#eeffee'],stats:{h:20,a:14,d:18,s:14,m:14}},
+   shape:'round',expr:'cute',bg:['#d0f0d0','#eeffee'],stats:{h:20,a:14,d:18,s:14,m:14}},
   {id:'s2d',si:2,sn:'ふつうちん',name:'おひさまちん',rar:'R',
    desc:'太陽みたいに明るい',fill:'#ffcc44',stroke:'#cc8800',light:'#fff0aa',
-   expr:'cute',bg:['#fff8cc','#fffae0'],stats:{h:14,a:18,d:15,s:18,m:15},
+   shape:'antenna',expr:'cute',bg:['#fff8cc','#fffae0'],stats:{h:14,a:18,d:15,s:18,m:15},
    extras:`<text x="10" y="68" font-size="11" opacity=".7">☀</text><text x="105" y="68" font-size="11" opacity=".7">☀</text>`},
   {id:'s2e',si:2,sn:'ふつうちん',name:'さくらちん',rar:'SR',
    desc:'さくら色の美しいちん',fill:'#ffb0c8',stroke:'#cc4488',light:'#ffd8e8',
-   expr:'cute',bg:['#ffe0f0','#fff5f8'],stats:{h:17,a:16,d:17,s:16,m:14},
+   shape:'bunny',expr:'cute',bg:['#ffe0f0','#fff5f8'],stats:{h:17,a:16,d:17,s:16,m:14},
    extras:`<text x="8" y="75" font-size="10" opacity=".75">🌸</text><text x="105" y="75" font-size="10" opacity=".75">🌸</text>`},
   // 特殊条件: あさのちん
   {id:'s2sp',si:2,sn:'ふつうちん',name:'あさのちん',rar:'SP',
    desc:'早朝に輝くちん',fill:'#ffaa66',stroke:'#cc6622',light:'#ffd4aa',
-   expr:'cute',bg:['#fff4cc','#fff8e0'],stats:{h:22,a:15,d:17,s:18,m:16},
+   shape:'antenna',expr:'cute',bg:['#fff4cc','#fff8e0'],stats:{h:22,a:15,d:17,s:18,m:16},
    cond:{type:'time',hours:[5,6,7,8]},
    condHint:'💡 早朝(5時〜8時)に進化すると出会える'},
   {id:'s2sp2',si:2,sn:'ふつうちん',name:'どようびちん',rar:'SP',
@@ -640,36 +769,36 @@ const FORMS = [
    cond:{type:'dow',days:[6]},condHint:'💡 土曜日に進化すると出会える'},
   {id:'s2sp3',si:2,sn:'ふつうちん',name:'まよなかちん',rar:'SP',
    desc:'真夜中0時の謎めいたちん',fill:'#001155',stroke:'#0000aa',light:'#334488',
-   eyeCol:'#aabbff',expr:'neutral',bg:['#080830','#101840'],stats:{h:14,a:23,d:14,s:20,m:13},
+   shape:'cat',eyeCol:'#aabbff',expr:'neutral',bg:['#080830','#101840'],stats:{h:14,a:23,d:14,s:20,m:13},
    cond:{type:'time',hours:[0]},condHint:'💡 深夜0時台に進化すると出会える'},
 
   // Stage 3 デカちん (total≈110)
   {id:'s3a',si:3,sn:'デカちん',name:'ノーマルデカちん',rar:'N',
    desc:'大きくなった！',fill:'#dc143c',stroke:'#880020',light:'#ff6677',
-   expr:'fierce',bg:['#ffa0a0','#ffe0c0'],stats:{h:24,a:28,d:22,s:20,m:16}},
+   shape:'spike',expr:'fierce',bg:['#ffa0a0','#ffe0c0'],stats:{h:24,a:28,d:22,s:20,m:16}},
   {id:'s3b',si:3,sn:'デカちん',name:'やみデカちん',rar:'N',
    desc:'闇に染まったちん',fill:'#334455',stroke:'#111122',light:'#667788',
-   eyeCol:'#ff4444',expr:'fierce',bg:['#c0c8d8','#d8e0f0'],stats:{h:20,a:33,d:18,s:22,m:17}},
+   shape:'devil',eyeCol:'#ff4444',expr:'fierce',bg:['#c0c8d8','#d8e0f0'],stats:{h:20,a:33,d:18,s:22,m:17}},
   {id:'s3c',si:3,sn:'デカちん',name:'こがねデカちん',rar:'R',
    desc:'輝くブロンズ色',fill:'#c89828',stroke:'#886010',light:'#e8cc80',
-   expr:'fierce',bg:['#f8e8a0','#fff0c0'],stats:{h:25,a:26,d:26,s:18,m:15}},
+   shape:'round',expr:'fierce',bg:['#f8e8a0','#fff0c0'],stats:{h:25,a:26,d:26,s:18,m:15}},
   {id:'s3d',si:3,sn:'デカちん',name:'ロイヤルデカちん',rar:'SR',
    desc:'王者の青',fill:'#4060cc',stroke:'#102090',light:'#8898e8',
-   expr:'fierce',bg:['#c0ccff','#e0e8ff'],stats:{h:22,a:24,d:28,s:20,m:16},
+   shape:'antenna',expr:'fierce',bg:['#c0ccff','#e0e8ff'],stats:{h:22,a:24,d:28,s:20,m:16},
    extras:`<text x="8" y="68" font-size="11" opacity=".7">♛</text><text x="105" y="68" font-size="11" opacity=".7">♛</text>`},
   // 特殊条件: きんようびデカちん
   {id:'s3sp',si:3,sn:'デカちん',name:'きんようびデカちん',rar:'SP',
    desc:'金曜の夜に現れる陽気なデカちん',fill:'#ddaa00',stroke:'#997700',light:'#ffee88',
-   expr:'proud',bg:['#fff8aa','#fffacc'],stats:{h:28,a:26,d:26,s:22,m:18},
+   shape:'antenna',expr:'proud',bg:['#fff8aa','#fffacc'],stats:{h:28,a:26,d:26,s:22,m:18},
    cond:{type:'dow',days:[5]},
    condHint:'💡 金曜日に進化すると出会える'},
   {id:'s3sp2',si:3,sn:'デカちん',name:'にちようびデカちん',rar:'SP',
    desc:'日曜日だけ現れる陽気なデカちん',fill:'#ff7722',stroke:'#cc3300',light:'#ffaa77',
-   expr:'fierce',bg:['#ffcc99','#ffeedd'],stats:{h:28,a:27,d:26,s:22,m:17},
+   shape:'devil',expr:'fierce',bg:['#ffcc99','#ffeedd'],stats:{h:28,a:27,d:26,s:22,m:17},
    cond:{type:'dow',days:[0]},condHint:'💡 日曜日に進化すると出会える'},
   {id:'s3sp3',si:3,sn:'デカちん',name:'ふゆのデカちん',rar:'SP',
    desc:'冬の寒さをまとった凛々しいデカちん',fill:'#aaccee',stroke:'#4488aa',light:'#cce8ff',
-   eyeCol:'#002244',expr:'fierce',bg:['#cce8ff','#e0f0ff'],stats:{h:30,a:22,d:30,s:22,m:16},
+   shape:'crystal',eyeCol:'#002244',expr:'fierce',bg:['#cce8ff','#e0f0ff'],stats:{h:30,a:22,d:30,s:22,m:16},
    cond:{type:'month',months:[12,1,2]},condHint:'💡 冬(12〜2月)に進化すると出会える'},
 
   // Stage 4 マッチョちん (total≈150)
@@ -679,18 +808,18 @@ const FORMS = [
    extras:`<path d="M35 155 Q33 143 39 132" fill="none" stroke="#881122" stroke-width="1.5" opacity=".7"/><path d="M95 155 Q97 143 91 132" fill="none" stroke="#881122" stroke-width="1.5" opacity=".7"/>`},
   {id:'s4b',si:4,sn:'マッチョちん',name:'アイアンマッチョ',rar:'N',
    desc:'鉄のように硬い',fill:'#7888a0',stroke:'#445566',light:'#aabccc',
-   expr:'fierce',bg:['#c8d4e0','#dde8f0'],stats:{h:28,a:30,d:45,s:22,m:25}},
+   shape:'spike',expr:'fierce',bg:['#c8d4e0','#dde8f0'],stats:{h:28,a:30,d:45,s:22,m:25}},
   {id:'s4c',si:4,sn:'マッチョちん',name:'ファイアーマッチョ',rar:'R',
    desc:'炎をまとう！',fill:'#ff4400',stroke:'#aa2200',light:'#ff9960',
-   expr:'fierce',bg:['#ffb080','#ffd8a0'],stats:{h:28,a:48,d:22,s:30,m:22},
+   shape:'devil',expr:'fierce',bg:['#ffb080','#ffd8a0'],stats:{h:28,a:48,d:22,s:30,m:22},
    extras:`<path d="M28 236 Q22 215 32 192 Q30 212 38 198 Q36 218 44 206" fill="#ff6600" opacity=".75"/><path d="M102 236 Q108 215 98 192 Q100 212 92 198 Q94 218 86 206" fill="#ff8833" opacity=".75"/>`},
   {id:'s4d',si:4,sn:'マッチョちん',name:'アイスマッチョ',rar:'SR',
    desc:'氷の結晶をまとう',fill:'#66aadd',stroke:'#2255aa',light:'#99ccee',
-   expr:'fierce',bg:['#c0e0ff','#e0f0ff'],stats:{h:36,a:26,d:40,s:28,m:20},
+   shape:'crystal',expr:'fierce',bg:['#c0e0ff','#e0f0ff'],stats:{h:36,a:26,d:40,s:28,m:20},
    extras:`<polygon points="30,240 34,222 38,240 30,234" fill="#aaddff" opacity=".85"/><polygon points="92,240 96,222 100,240 92,234" fill="#aaddff" opacity=".85"/><circle cx="24" cy="222" r="5" fill="#cceeff" opacity=".7"/><circle cx="106" cy="222" r="5" fill="#cceeff" opacity=".7"/>`},
   {id:'s4sp1',si:4,sn:'マッチョちん',name:'にちようびマッチョ',rar:'SP',
    desc:'日曜も鍛えるストイックなマッチョ',fill:'#ee9944',stroke:'#aa5500',light:'#ffcc88',
-   expr:'fierce',bg:['#ffeecc','#fff4dd'],stats:{h:38,a:38,d:34,s:26,m:24},
+   shape:'round',expr:'fierce',bg:['#ffeecc','#fff4dd'],stats:{h:38,a:38,d:34,s:26,m:24},
    cond:{type:'dow',days:[0]},condHint:'💡 日曜日に進化すると出会える'},
   {id:'s4sp2',si:4,sn:'マッチョちん',name:'なつやすみマッチョ',rar:'SP',
    desc:'夏休みに鍛えまくった猛者',fill:'#ffdd44',stroke:'#cc9900',light:'#fff8aa',
@@ -698,29 +827,29 @@ const FORMS = [
    cond:{type:'month',months:[8]},condHint:'💡 8月に進化すると出会える'},
   {id:'s4sp3',si:4,sn:'マッチョちん',name:'はるのマッチョ',rar:'SP',
    desc:'春風のように爽やかなマッチョ',fill:'#ffbbdd',stroke:'#cc4488',light:'#ffd8ee',
-   expr:'fierce',bg:['#ffd0e8','#ffecf4'],stats:{h:38,a:38,d:34,s:26,m:24},
+   shape:'bunny',expr:'fierce',bg:['#ffd0e8','#ffecf4'],stats:{h:38,a:38,d:34,s:26,m:24},
    cond:{type:'month',months:[3,4,5]},condHint:'💡 春(3〜5月)に進化すると出会える'},
 
   // Stage 5 スーパーちん (total≈190)
   {id:'s5a',si:5,sn:'スーパーちん',name:'ノーマルスーパー',rar:'N',
    desc:'超パワーに目覚めた',fill:'#8822cc',stroke:'#440088',light:'#bb77ee',
-   expr:'proud',bg:['#e0b0ff','#f0d8ff'],stats:{h:42,a:48,d:38,s:34,m:28},
+   shape:'spike',expr:'proud',bg:['#e0b0ff','#f0d8ff'],stats:{h:42,a:48,d:38,s:34,m:28},
    extras:`<ellipse cx="65" cy="150" rx="62" ry="118" fill="#aa44ff" opacity=".05"/>`},
   {id:'s5b',si:5,sn:'スーパーちん',name:'ゴーストスーパー',rar:'N',
    desc:'半透明の幽霊ちん',fill:'#cccce8',stroke:'#9999bb',light:'#eeeeff',
-   eyeCol:'#6666aa',expr:'proud',bg:['#e8e8ff','#f8f8ff'],stats:{h:35,a:38,d:36,s:48,m:33},
+   shape:'cat',eyeCol:'#6666aa',expr:'proud',bg:['#e8e8ff','#f8f8ff'],stats:{h:35,a:38,d:36,s:48,m:33},
    extras:`<ellipse cx="65" cy="150" rx="60" ry="115" fill="#8888cc" opacity=".07"/>`},
   {id:'s5c',si:5,sn:'スーパーちん',name:'でんきスーパー',rar:'R',
    desc:'電撃をまとう！',fill:'#ddcc00',stroke:'#886600',light:'#ffee88',
-   expr:'proud',bg:['#fff8aa','#fffacc'],stats:{h:35,a:58,d:28,s:42,m:27},
+   shape:'antenna',expr:'proud',bg:['#fff8aa','#fffacc'],stats:{h:35,a:58,d:28,s:42,m:27},
    extras:`<path d="M14 95 L24 128 L18 128 L28 162" fill="none" stroke="#ffee00" stroke-width="3" opacity=".85"/><path d="M116 95 L106 128 L112 128 L102 162" fill="none" stroke="#ffee00" stroke-width="3" opacity=".85"/>`},
   {id:'s5d',si:5,sn:'スーパーちん',name:'どくスーパー',rar:'R',
    desc:'毒を操るちん',fill:'#8844aa',stroke:'#442255',light:'#bb88cc',
-   expr:'proud',bg:['#d8b0f8','#ecd4ff'],stats:{h:40,a:52,d:34,s:36,m:28},
+   shape:'devil',expr:'proud',bg:['#d8b0f8','#ecd4ff'],stats:{h:40,a:52,d:34,s:36,m:28},
    extras:`<circle cx="14" cy="152" r="7" fill="#88ff44" opacity=".75"/><circle cx="116" cy="132" r="6" fill="#88ff44" opacity=".7"/><circle cx="12" cy="212" r="5" fill="#88ff44" opacity=".65"/>`},
   {id:'s5e',si:5,sn:'スーパーちん',name:'サイキックスーパー',rar:'SR',
    desc:'超能力者のちん',fill:'#ee66aa',stroke:'#993377',light:'#ffaacc',
-   expr:'proud',bg:['#ffd0e8','#ffecf4'],stats:{h:36,a:44,d:38,s:40,m:32},
+   shape:'antenna',expr:'proud',bg:['#ffd0e8','#ffecf4'],stats:{h:36,a:44,d:38,s:40,m:32},
    extras:`<text x="9" y="90" font-size="14" opacity=".8">✦</text><text x="107" y="90" font-size="14" opacity=".8">✦</text><text x="7" y="188" font-size="11" opacity=".7">✦</text><text x="109" y="188" font-size="11" opacity=".7">✦</text>`},
   // 特殊条件: れんせいスーパー
   {id:'s5sp',si:5,sn:'スーパーちん',name:'れんせいスーパー',rar:'SP',
@@ -731,11 +860,11 @@ const FORMS = [
    extras:`<ellipse cx="65" cy="150" rx="62" ry="118" fill="#4488ff" opacity=".05"/><text x="8" y="60" font-size="14" opacity=".75">✨</text><text x="108" y="60" font-size="14" opacity=".75">✨</text>`},
   {id:'s5sp2',si:5,sn:'スーパーちん',name:'しゅうまつスーパー',rar:'SP',
    desc:'週末にだけ全力を出すスーパーちん',fill:'#44bbff',stroke:'#0066cc',light:'#aaddff',
-   eyeCol:'#002244',expr:'proud',bg:['#c0e8ff','#e0f4ff'],stats:{h:44,a:50,d:42,s:40,m:28},
+   shape:'round',eyeCol:'#002244',expr:'proud',bg:['#c0e8ff','#e0f4ff'],stats:{h:44,a:50,d:42,s:40,m:28},
    cond:{type:'dow',days:[0,6]},condHint:'💡 週末(土・日)に進化すると出会える'},
   {id:'s5sp3',si:5,sn:'スーパーちん',name:'ごごスーパー',rar:'SP',
    desc:'午後の陽気にテンションMAX',fill:'#ffbb44',stroke:'#cc7700',light:'#ffdd88',
-   eyeCol:'#442200',expr:'proud',bg:['#fff4aa','#fff8cc'],stats:{h:40,a:55,d:36,s:40,m:29},
+   shape:'bunny',eyeCol:'#442200',expr:'proud',bg:['#fff4aa','#fff8cc'],stats:{h:40,a:55,d:36,s:40,m:29},
    cond:{type:'time',hours:[12,13,14,15,16,17]},condHint:'💡 午後(12〜17時)に進化すると出会える'},
 
   // Stage 6 ゴールデンちん (total≈230)
@@ -1086,12 +1215,27 @@ document.getElementById('btnReset').addEventListener('click',()=>{
 function thumbSVG(f,isDisc){
   if(!isDisc){
     const sz=SZ[f.si];
-    const body=f.si===0
-      ?`<ellipse cx="65" cy="145" rx="50" ry="72" fill="#444"/>`
-      :`<ellipse cx="${sz.b1}" cy="${sz.by}" rx="${sz.brx}" ry="${sz.bry}" fill="#444"/>
-        <ellipse cx="${sz.b2}" cy="${sz.by}" rx="${sz.brx}" ry="${sz.bry}" fill="#444"/>
-        <ellipse cx="65" cy="${sz.hcy}" rx="${sz.hrx}" ry="${sz.hry}" fill="#444"/>
-        <rect x="${sz.sx}" y="${sz.sy}" width="${sz.sw}" height="${sz.sh}" rx="${sz.sr}" fill="#444"/>`;
+    let body='';
+    if(f.si===0){
+      body=`<ellipse cx="65" cy="145" rx="50" ry="72" fill="#444"/>`;
+    } else {
+      const {hcy,hrx,hry,sx,sy,sw,sh,sr,b1,b2,by,brx,bry}=sz;
+      const si=f.si;
+      let silArms='',silWings='';
+      if(si>=3){
+        const ax=Rd(sx-2),axr=Rd(sx+sw+2),ay=Rd(sy+sh*.1);
+        if(si===3){const aw=Rd(hrx*.3),ah=Rd(sh*.2);silArms=`<rect x="${Rd(ax-aw)}" y="${ay}" width="${aw}" height="${ah}" rx="${Rd(aw*.5)}" fill="#444"/><rect x="${axr}" y="${ay}" width="${aw}" height="${ah}" rx="${Rd(aw*.5)}" fill="#444"/>`;}
+        else if(si===4){const maw=Rd(hrx*.36),mah=Rd(sh*.22);silArms=`<rect x="${Rd(ax-maw)}" y="${ay}" width="${maw}" height="${mah}" rx="${Rd(maw*.5)}" fill="#444"/><rect x="${axr}" y="${ay}" width="${maw}" height="${mah}" rx="${Rd(maw*.5)}" fill="#444"/>`;}
+        else{const faw=Rd(hrx*.28),uH=Rd(sh*.22),lH=Rd(sh*.2);silArms=`<rect x="${Rd(ax-faw)}" y="${ay}" width="${faw}" height="${Rd(uH+lH+4)}" rx="${Rd(faw*.5)}" fill="#444"/><rect x="${axr}" y="${ay}" width="${faw}" height="${Rd(uH+lH+4)}" rx="${Rd(faw*.5)}" fill="#444"/>`;}
+      }
+      if(si>=6){
+        const wx=Rd(sx-2),wxr=Rd(sx+sw+2),wy=Rd(sy+sh*.1);
+        if(si===6)silWings=`<path d="M${wx} ${Rd(wy+8)} Q${Rd(wx-30)} ${Rd(wy-20)} ${Rd(wx-24)} ${Rd(wy+38)} Q${Rd(wx-12)} ${Rd(wy+28)} ${wx} ${Rd(wy+32)}" fill="#444"/><path d="M${wxr} ${Rd(wy+8)} Q${Rd(wxr+30)} ${Rd(wy-20)} ${Rd(wxr+24)} ${Rd(wy+38)} Q${Rd(wxr+12)} ${Rd(wy+28)} ${wxr} ${Rd(wy+32)}" fill="#444"/>`;
+        else if(si===7)silWings=`<path d="M${wx} ${Rd(wy+5)} Q${Rd(wx-52)} ${Rd(wy-22)} ${Rd(wx-40)} ${Rd(wy+72)} Q${Rd(wx-22)} ${Rd(wy+55)} ${wx} ${Rd(wy+58)}" fill="#444"/><path d="M${wxr} ${Rd(wy+5)} Q${Rd(wxr+52)} ${Rd(wy-22)} ${Rd(wxr+40)} ${Rd(wy+72)} Q${Rd(wxr+22)} ${Rd(wy+55)} ${wxr} ${Rd(wy+58)}" fill="#444"/>`;
+        else if(si>=8)silWings=`<path d="M${wx} ${Rd(wy)} L${Rd(wx-48)} ${Rd(wy-42)} L${Rd(wx-55)} ${Rd(wy+28)} L${Rd(wx-26)} ${Rd(wy+78)} Z" fill="#444"/><path d="M${wxr} ${Rd(wy)} L${Rd(wxr+48)} ${Rd(wy-42)} L${Rd(wxr+55)} ${Rd(wy+28)} L${Rd(wxr+26)} ${Rd(wy+78)} Z" fill="#444"/>`;
+      }
+      body=`${silWings}<ellipse cx="${b1}" cy="${by}" rx="${brx}" ry="${bry}" fill="#444"/><ellipse cx="${b2}" cy="${by}" rx="${brx}" ry="${bry}" fill="#444"/>${silArms}<ellipse cx="65" cy="${hcy}" rx="${hrx}" ry="${hry}" fill="#444"/><rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" rx="${sr}" fill="#444"/>`;
+    }
     return `<svg viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${body}<text x="65" y="155" text-anchor="middle" font-size="22" fill="#888">???</text></svg>`;
   }
   return `<svg viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${renderForm(f)}</svg>`;
