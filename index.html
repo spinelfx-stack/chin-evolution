@@ -337,7 +337,7 @@ body{
 .reinc-bonus-row{font-size:.72rem;color:#ff8800;text-align:center;margin:.08rem 0;min-height:.9rem;font-weight:bold;letter-spacing:.02em}
 /* ── 全消去ボタン（左上・目立たない） ── */
 .btn-hard-reset{
-  position:fixed;top:6px;left:6px;z-index:9998;
+  position:fixed;top:6px;left:6px;z-index:50;
   background:rgba(40,10,10,.65);color:#885555;
   border:1px solid #442222;border-radius:5px;
   font-size:.55rem;padding:.2rem .38rem;cursor:pointer;
@@ -345,7 +345,7 @@ body{
 }
 .btn-hard-reset:hover{opacity:.85;color:#ff8888}
 /* ── 管理者モード ── */
-.admin-tap{position:fixed;top:0;right:0;width:55px;height:55px;z-index:9999;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
+.admin-tap{position:fixed;top:0;right:0;width:55px;height:55px;z-index:50;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
 .admin-modal{background:#1a0a00;border-radius:18px;padding:1rem;max-width:300px;width:92%;
   box-shadow:0 12px 48px rgba(255,80,0,.3);margin:auto;color:#ffccaa}
 .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
@@ -658,17 +658,17 @@ function chinSVG(sz, f) {
   const blush=expr==='cute'?`<ellipse cx="${Rd(65-eo*1.8)}" cy="${Rd(ey+er*.4)}" rx="${Rd(er*1.1)}" ry="${Rd(er*.65)}" fill="${light}" opacity=".65"/>
 <ellipse cx="${Rd(65+eo*1.8)}" cy="${Rd(ey+er*.4)}" rx="${Rd(er*1.1)}" ry="${Rd(er*.65)}" fill="${light}" opacity=".65"/>`:'';
 
-  // ツノ (stage4+ fierce)
+  // ツノ (stage4+ fierce) ※Nレアリティは付けない
   let horns='';
-  if(expr==='fierce'&&si>=4){
+  if(expr==='fierce'&&si>=4&&f.rar!=='N'){
     const hty=Rd(hcy-hry);
     horns=`<path d="M${Rd(65-hrx*.38)} ${Rd(hty+4)} L${Rd(65-hrx*.56)} ${Rd(hty-16)} L${Rd(65-hrx*.18)} ${Rd(hty+2)}" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>
 <path d="M${Rd(65+hrx*.38)} ${Rd(hty+4)} L${Rd(65+hrx*.56)} ${Rd(hty-16)} L${Rd(65+hrx*.18)} ${Rd(hty+2)}" fill="${fill}" stroke="${stroke}" stroke-width="2.2"/>`;
   }
 
-  // 翼 (stage6+ 胴体より先に描画して後ろに見せる)
+  // 翼 (stage6+) ※Nレアリティは付けない
   let wings='';
-  if(si>=6){
+  if(si>=6&&f.rar!=='N'){
     const wx=Rd(sx-2),wxr=Rd(sx+sw+2),wy=Rd(sy+sh*.1);
     if(si===6){
       wings=`
@@ -703,9 +703,9 @@ function chinSVG(sz, f) {
     }
   }
 
-  // 腕 (stage3+)
+  // 腕 (stage3+) ※Nレアリティは付けない
   let arms='';
-  if(si>=3){
+  if(si>=3&&f.rar!=='N'){
     const ax=Rd(sx-2),axr=Rd(sx+sw+2),ay=Rd(sy+sh*.1);
     if(si===3){
       const aw=Rd(hrx*.3),ah=Rd(sh*.2);
