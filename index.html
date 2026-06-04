@@ -241,6 +241,69 @@ body{
 .sum-label{color:#8899bb}
 .sum-val{color:#eeeeff;font-weight:bold}
 
+/* ── CKS通貨 ── */
+.cks-display{font-size:.88rem;color:#ffcc00;font-weight:bold;text-align:center;margin:.1rem 0;letter-spacing:.04em}
+/* ── 実績通知 ── */
+.achiev-notif{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#1a0030,#2a0050);color:#ffee44;
+  font-size:.88rem;font-weight:bold;padding:.55rem 1.2rem;border-radius:14px;
+  box-shadow:0 4px 20px rgba(200,100,255,.5);pointer-events:none;
+  animation:achievPop 3.5s ease forwards;z-index:250;text-align:center;white-space:nowrap}
+@keyframes achievPop{
+  0%{opacity:0;transform:translateX(-50%) translateY(30px) scale(.7)}
+  12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.08)}
+  25%{transform:translateX(-50%) translateY(0) scale(1)}
+  75%{opacity:1}
+  100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.9)}
+}
+/* ── ショップ ── */
+.shop-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;
+  justify-content:center;z-index:300;overflow-y:auto;padding:.8rem 0}
+.shop-overlay.hidden{display:none}
+.shop-modal{background:#1a1000;border-radius:18px;padding:.9rem;max-width:380px;width:95%;
+  box-shadow:0 12px 48px rgba(220,160,0,.3);margin:auto;color:#ffeecc}
+.shop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.shop-title{font-size:1.1rem;font-weight:bold;color:#ffcc00}
+.shop-close{background:#2a1800;border:none;border-radius:50%;width:27px;height:27px;color:#ffcc44;font-size:.95rem;cursor:pointer}
+.shop-cks{font-size:.85rem;color:#ffcc00;margin-bottom:.5rem;text-align:center;font-weight:bold}
+.shop-tabs{display:flex;gap:.3rem;margin-bottom:.5rem}
+.shop-tab{flex:1;padding:.3rem;font-size:.75rem;border:none;border-radius:8px;cursor:pointer;
+  font-family:inherit;background:#2a1800;color:#cc8844;transition:background .2s}
+.shop-tab.active{background:#664400;color:#ffeecc}
+.shop-section{font-size:.78rem;font-weight:bold;color:#cc8800;margin:.5rem 0 .25rem;
+  border-bottom:1px solid #3a2200;padding-bottom:.18rem}
+.shop-item{display:flex;align-items:center;gap:.5rem;background:#2a1800;border-radius:10px;
+  padding:.4rem .5rem;margin:.28rem 0}
+.shop-item-icon{font-size:1.3rem;flex-shrink:0;min-width:26px;text-align:center}
+.shop-item-info{flex:1;min-width:0}
+.shop-item-name{font-size:.78rem;font-weight:bold;color:#ffeecc}
+.shop-item-desc{font-size:.63rem;color:#cc9966;margin-top:.08rem;line-height:1.35}
+.shop-item-price{font-size:.7rem;color:#ffcc00;margin-top:.06rem}
+.shop-btn{padding:.28rem .65rem;font-size:.73rem;border:none;border-radius:8px;cursor:pointer;
+  font-family:inherit;font-weight:bold;flex-shrink:0}
+.shop-btn-buy{background:#cc8800;color:#fff8cc}
+.shop-btn-buy:hover{background:#ffaa00}
+.shop-btn-buy:disabled{background:#3a2200;color:#664400;cursor:not-allowed}
+.shop-btn-done{background:#224400;color:#88cc44;cursor:default}
+/* ── サブ育成スロット ── */
+.sub-slots{display:flex;gap:.4rem;justify-content:center;margin-top:.3rem;flex-wrap:wrap}
+.sub-slot{background:rgba(255,100,180,.08);border:1.5px solid rgba(255,100,180,.22);
+  border-radius:12px;padding:.3rem .4rem;text-align:center;min-width:84px}
+.sub-slot svg{display:block;margin:0 auto}
+.sub-slot-name{font-size:.56rem;color:#cc88aa;margin-top:.1rem;font-weight:bold}
+.sub-slot-info{font-size:.5rem;color:#aa6688;margin-top:.03rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px}
+/* ── 転生ボーナス表示 ── */
+.reinc-bonus-row{font-size:.72rem;color:#ff8800;text-align:center;margin:.08rem 0;min-height:.9rem;font-weight:bold;letter-spacing:.02em}
+/* ── 全消去ボタン（左上・目立たない） ── */
+.btn-hard-reset{
+  position:fixed;top:6px;left:6px;z-index:9998;
+  background:rgba(40,10,10,.65);color:#885555;
+  border:1px solid #442222;border-radius:5px;
+  font-size:.55rem;padding:.2rem .38rem;cursor:pointer;
+  font-family:inherit;opacity:.35;transition:opacity .25s;line-height:1
+}
+.btn-hard-reset:hover{opacity:.85;color:#ff8888}
 /* ── 管理者モード ── */
 .admin-tap{position:fixed;top:0;right:0;width:55px;height:55px;z-index:9999;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
 .admin-modal{background:#1a0a00;border-radius:18px;padding:1rem;max-width:300px;width:92%;
@@ -321,7 +384,9 @@ body{
 
 <!-- ステータス・カウント -->
 <div class="stat-row" id="statRow"></div>
+<div class="reinc-bonus-row" id="reincBonusRow" style="display:none"></div>
 <div class="count-display">ぺちぺち <span id="countEl">0</span>回</div>
+<div class="cks-display" id="cksDisplay">💰 0 CKS</div>
 
 <!-- 進化ボタン（条件付き） -->
 <div id="evolveReadyRow" class="evolve-ready-row hidden">
@@ -350,8 +415,10 @@ body{
     <button class="icon-btn" id="btnTrain">💪<span class="ib-label">訓練</span><span class="train-badge hidden" id="trainBadge">!</span></button>
     <button class="icon-btn" id="btnAcc">💍<span class="ib-label">装備</span></button>
     <button class="icon-btn" id="btnSummary">📊<span class="ib-label">実績</span></button>
-    <button class="icon-btn" id="btnReset">↺<span class="ib-label">リセット</span></button>
+    <button class="icon-btn" id="btnShop">🛒<span class="ib-label">ショップ</span></button>
   </div>
+  <!-- サブ育成スロット -->
+  <div id="subSlotArea" class="sub-slots"></div>
   <!-- 転生（Stage6以上で表示） -->
   <div class="reincarn-compact hidden" id="reincarnRow">
     <button class="btn-reincarn-sm" id="btnReincarn">🔄 転生する</button>
@@ -417,6 +484,23 @@ body{
   </div>
 </div>
 
+<!-- ショップ・実績モーダル -->
+<div class="shop-overlay hidden" id="shopOverlay">
+  <div class="shop-modal">
+    <div class="shop-header">
+      <div class="shop-title">💰 CKSショップ</div>
+      <button class="shop-close" id="shopClose">✕</button>
+    </div>
+    <div class="shop-cks" id="shopCksDisplay">💰 0 CKS 所持</div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" id="tabShop" onclick="switchShopTab('shop')">🛒 ショップ</button>
+      <button class="shop-tab" id="tabAchiev" onclick="switchShopTab('achiev')">🏅 実績</button>
+    </div>
+    <div id="shopContent"></div>
+  </div>
+</div>
+<!-- 全消去ボタン（左上・押しづらい） -->
+<button id="btnHardReset" class="btn-hard-reset" title="全データリセット">⚠全消去</button>
 <!-- 管理者タップエリア（不可視） -->
 <div class="admin-tap" id="adminTap"></div>
 
@@ -1014,6 +1098,17 @@ let autoTimer=null;
 let canEvolve=false;
 let totalManualPechis=+(localStorage.getItem('chin_manual')||'0');
 let totalAutoPechis=+(localStorage.getItem('chin_auto')||'0');
+let cks=+(localStorage.getItem('chin_cks')||'0');
+let shopLevels=JSON.parse(localStorage.getItem('chin_shop')||'{}');
+let achievDone=new Set(JSON.parse(localStorage.getItem('chin_achiev')||'[]'));
+let maxStageEverReached=+(localStorage.getItem('chin_maxstage')||'0');
+let npcBeaten=new Set(JSON.parse(localStorage.getItem('chin_npcbeaten')||'[]'));
+let autoEverUsed=localStorage.getItem('chin_autoused')==='1';
+let totalShoots=+(localStorage.getItem('chin_shoots')||'0');
+let totalTrainAllocs=+(localStorage.getItem('chin_tallocs')||'0');
+let cksProgress=0;
+const CKS_PER_PECHI=50;
+let subSlots=[];
 
 function saveAll(){
   localStorage.setItem('chin_disc',JSON.stringify([...discovered]));
@@ -1104,9 +1199,31 @@ function updateUI(){
 
   // ステータス表示
   const s=getEffectiveStats(currentForm);
-  const bonTxt=reincarnBonusPct>0?` <span class="bonus-text">+${reincarnBonusPct.toFixed(1)}%転生ボーナス</span>`:'';
-  document.getElementById('statRow').innerHTML=
-    `HP:<b>${s.h}</b> ATK:<b>${s.a}</b> DEF:<b>${s.d}</b> SPD:<b>${s.s}</b> STM:<b>${s.m}</b>${bonTxt}`;
+  const base=currentForm.stats;
+  const tb=getTBonus(currentForm.id);
+  let statParts=[];
+  for(const [k,lbl] of [['h','HP'],['a','ATK'],['d','DEF'],['s','SPD'],['m','STM']]){
+    const bv=Math.round(base[k]*(1+reincarnBonusPct/100));
+    const diff=s[k]-bv; // 訓練ボーナス分
+    const reincDiff=bv-base[k]; // 転生ボーナス分
+    let txt=`${lbl}:<b>${s[k]}</b>`;
+    if(reincDiff>0||diff>0){
+      const parts=[];
+      if(reincDiff>0) parts.push(`<span style="color:#ff8800">+${reincDiff}</span>`);
+      if(diff>0) parts.push(`<span style="color:#66aa66">+${diff}</span>`);
+      txt+=`<span style="font-size:.6rem">(${parts.join('')})</span>`;
+    }
+    statParts.push(txt);
+  }
+  document.getElementById('statRow').innerHTML=statParts.join(' ');
+  const rb=document.getElementById('reincBonusRow');
+  if(rb){
+    if(reincarnBonusPct>0){
+      const mult=(1+reincarnBonusPct/100);
+      rb.style.display='block';
+      rb.innerHTML=`✦ 転生ボーナス ×${mult.toFixed(4)}倍（転生${reincarnations}回 累計+${reincarnBonusPct.toFixed(2)}%）`;
+    } else { rb.style.display='none'; }
+  }
 
   // 転生ボタン
   const rRow=document.getElementById('reincarnRow');
@@ -1143,15 +1260,25 @@ function pechipechi(x,y,isAuto=false){
   charEl.addEventListener('animationend',()=>charEl.classList.remove('wiggle'),{once:true});
   const n=1+Math.floor(Math.random()*2);
   for(let i=0;i<n;i++) setTimeout(()=>spawnText(x+(Math.random()-.5)*40,y),i*80);
-  count++;
-  addTrainPechi();
+  const pMult=pechiCountMult();
+  let finalMult=pMult;
+  if(shopHas('lucky_pechi')&&Math.random()<0.05){
+    finalMult=pMult*3;
+    spawnText(x-20,y-55); spawnText(x+20,y-60);
+  }
+  count+=finalMult;
+  for(let i=0;i<finalMult;i++) addTrainPechi();
+  cksProgress++;
+  while(cksProgress>=CKS_PER_PECHI){ cksProgress-=CKS_PER_PECHI; addCKS(1); }
   // 手動/オート累計
   if(isAuto){ totalAutoPechis++; localStorage.setItem('chin_auto',String(totalAutoPechis)); }
   else { totalManualPechis++; localStorage.setItem('chin_manual',String(totalManualPechis)); }
-  // 進化閾値チェック（自動進化しない）
+  // 進化閾値チェック
   if(!canEvolve && currentStageIdx<9 && count>=THRESHOLDS[currentStageIdx+1]){
     canEvolve=true;
+    if(shopHas('auto_evolve')) setTimeout(()=>document.getElementById('btnEvolve').click(),150);
   }
+  checkAchievements();
   updateUI();
 }
 
@@ -1164,6 +1291,10 @@ document.getElementById('btnEvolve').addEventListener('click',()=>{
   const f=pickForm(newSi);
   applyForm(f,true);
   setTimeout(()=>showBanner(`✨ ${f.name} に進化！`),350);
+  addCKS(newSi*20);
+  maxStageEverReached=Math.max(maxStageEverReached,newSi);
+  localStorage.setItem('chin_maxstage',String(maxStageEverReached));
+  checkAchievements();
   updateUI();
 });
 
@@ -1177,7 +1308,9 @@ document.getElementById('btnReincarn').addEventListener('click',()=>{
   count=0; currentStageIdx=0;
   const f=FORMS[0]; applyForm(f,false);
   document.body.style.background=`linear-gradient(135deg,${f.bg[0]} 0%,${f.bg[1]} 100%)`;
+  addCKS(50);
   saveAll();
+  checkAchievements();
   updateUI();
   showBanner(`🔄 転生！ボーナス+${bonus}% 獲得！`);
 });
@@ -1194,6 +1327,8 @@ const speedSel=document.getElementById('speedSel');
 btnAuto.addEventListener('click',()=>{
   if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnAuto.textContent='▶ オート'; btnAuto.classList.remove('on'); }
   else {
+    autoEverUsed=true; localStorage.setItem('chin_autoused','1');
+    checkAchievements();
     const rect=stageArea.getBoundingClientRect();
     const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
     autoTimer=setInterval(()=>pechipechi(cx,cy,true),+speedSel.value);
@@ -1202,13 +1337,11 @@ btnAuto.addEventListener('click',()=>{
 });
 speedSel.addEventListener('change',()=>{ if(autoTimer){ btnAuto.click(); btnAuto.click(); } });
 
-document.getElementById('btnReset').addEventListener('click',()=>{
-  if(!confirm('ぺちぺち回数と進化をリセットします。\n図鑑・転生ボーナスは保持されます。')) return;
-  if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnAuto.textContent='▶ オート'; btnAuto.classList.remove('on'); }
-  count=0; currentStageIdx=0; canEvolve=false;
-  const f=FORMS[0]; applyForm(f,false);
-  document.body.style.background=`linear-gradient(135deg,${f.bg[0]} 0%,${f.bg[1]} 100%)`;
-  updateUI();
+document.getElementById('btnHardReset').addEventListener('click',()=>{
+  if(!confirm('⚠ 全データをリセットします\n\nぺちぺち記録・図鑑・転生・CKS・実績\nアクセサリー・ショップ購入履歴\nすべて消えます。本当によろしいですか？')) return;
+  if(!confirm('最終確認：この操作は取り消せません。\n全データを完全に消去しますか？')) return;
+  localStorage.clear();
+  location.reload();
 });
 
 // ── 図鑑 ──
@@ -1356,7 +1489,11 @@ function renderSummary(){
     ['訓練ボーナス(現フォーム)', '+'+tbTotal],
     ['現在ステータス合計', esTotal],
     ['バトル戦績', battleWins+'勝 '+battleLosses+'敗'],
+    ['撃破NPC', npcBeaten.size+' / '+NPCS.length+' 体'],
+    ['発射回数', totalShoots.toLocaleString()+'回'],
     ['アクセサリー所持', ownedAcc.size+' / '+ACCESSORIES.length+' 種'],
+    ['CKS残高', cks.toLocaleString()+' CKS'],
+    ['実績達成', achievDone.size+' / '+ACHIEVEMENTS.length+' 個'],
   ];
   document.getElementById('sumBody').innerHTML=rows.map(([l,v])=>
     `<div class="sum-row"><span class="sum-label">${l}</span><span class="sum-val">${v}</span></div>`
@@ -1437,7 +1574,7 @@ function pechisNeeded(f){
 
 function addTrainPechi(){
   const id=currentForm.id, need=pechisNeeded(currentForm);
-  trainCount[id]=(trainCount[id]||0)+1;
+  trainCount[id]=(trainCount[id]||0)+trainSpeedMult();
   while(trainCount[id]>=need){
     trainCount[id]-=need;
     pendingPts[id]=(pendingPts[id]||0)+1;
@@ -1455,6 +1592,9 @@ function allocateStat(stat){
   pendingPts[id]--;
   localStorage.setItem('chin_train',JSON.stringify(trainingBonus));
   localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+  totalTrainAllocs++;
+  localStorage.setItem('chin_tallocs',String(totalTrainAllocs));
+  checkAchievements();
   updateTrainBadge();
   renderTrainModal();
   updateUI();
@@ -1573,6 +1713,9 @@ function spawnDopyuText(tipX, tipY) {
 function shoot() {
   if (shooting) return;
   shooting = true;
+  totalShoots++;
+  localStorage.setItem('chin_shoots',String(totalShoots));
+  checkAchievements();
   charEl.classList.remove('wiggle', 'shoot');
   void charEl.offsetWidth;
   charEl.classList.add('shoot');
@@ -2013,8 +2156,12 @@ async function startBattle(npc) {
     resEl.className = 'b-result win';
     resEl.textContent = `🎉 ${playerName} の勝利！`;
     battleWins++; localStorage.setItem('b_wins', battleWins);
-    // アクセサリードロップ
     const npcIdx = NPCS.indexOf(npc);
+    addCKS((npcIdx+1)*10);
+    npcBeaten.add(npc.id);
+    localStorage.setItem('chin_npcbeaten',JSON.stringify([...npcBeaten]));
+    checkAchievements();
+    // アクセサリードロップ
     const dropped = dropAccessory(npcIdx);
     if (dropped) {
       const isNew = !ownedAcc.has(dropped.id);
@@ -2087,11 +2234,258 @@ document.getElementById('btnRematch').addEventListener('click', () => {
   if (currentNpc) startBattle(currentNpc);
 });
 
+// ── CKSヘルパー ──
+function shopLvl(id){ return shopLevels[id]||0; }
+function shopHas(id){ return shopLvl(id)>0; }
+function pechiCountMult(){ return 1+shopLvl('double_pechi'); }
+function trainSpeedMult(){ return 1+shopLvl('train_boost'); }
+function cksMultiplier(){ return 1+shopLvl('cks_bonus')*0.5; }
+function totalPechis(){ return totalManualPechis+totalAutoPechis; }
+function addCKS(n){
+  cks+=Math.round(n*cksMultiplier());
+  localStorage.setItem('chin_cks',String(cks));
+  updateCKSDisplay();
+}
+function spendCKS(n){ cks-=n; localStorage.setItem('chin_cks',String(cks)); updateCKSDisplay(); }
+function updateCKSDisplay(){
+  const a=document.getElementById('cksDisplay'); if(a) a.textContent=`💰 ${cks.toLocaleString()} CKS`;
+  const b=document.getElementById('shopCksDisplay'); if(b) b.textContent=`💰 ${cks.toLocaleString()} CKS 所持`;
+}
+
+// ── 実績定義 ──
+const ACHIEVEMENTS=[
+  {id:'p100',   icon:'👆',cks:10,   name:'ぺちぺち100回',   desc:'累計100回ぺちぺちした',        check:()=>totalPechis()>=100},
+  {id:'p500',   icon:'👆',cks:25,   name:'ぺちぺち500回',   desc:'累計500回ぺちぺちした',        check:()=>totalPechis()>=500},
+  {id:'p1000',  icon:'👊',cks:50,   name:'ぺちぺち1000回',  desc:'累計1000回ぺちぺちした',       check:()=>totalPechis()>=1000},
+  {id:'p5000',  icon:'👊',cks:150,  name:'ぺちぺち5000回',  desc:'累計5000回ぺちぺちした',       check:()=>totalPechis()>=5000},
+  {id:'p10000', icon:'🔥',cks:300,  name:'ぺちぺち1万回',   desc:'累計1万回ぺちぺちした',        check:()=>totalPechis()>=10000},
+  {id:'p50000', icon:'🔥',cks:1000, name:'ぺちぺち5万回',   desc:'累計5万回ぺちぺちした',        check:()=>totalPechis()>=50000},
+  {id:'disc5',  icon:'📖',cks:20,   name:'5種類発見',        desc:'5種類のフォームを発見した',    check:()=>discovered.size>=5},
+  {id:'disc10', icon:'📖',cks:50,   name:'10種類発見',       desc:'10種類のフォームを発見した',   check:()=>discovered.size>=10},
+  {id:'disc20', icon:'📖',cks:150,  name:'20種類発見',       desc:'20種類のフォームを発見した',   check:()=>discovered.size>=20},
+  {id:'disc_all',icon:'🏆',cks:2000,name:'図鑑コンプリート', desc:'全フォームを発見した！',       check:()=>discovered.size>=FORMS.length},
+  {id:'sp1',    icon:'✦', cks:100,  name:'初めての特殊',     desc:'SPレアフォームを発見した',     check:()=>FORMS.some(f=>f.rar==='SP'&&discovered.has(f.id))},
+  {id:'sp_all', icon:'✦', cks:1000, name:'全SP制覇',         desc:'全SPフォームを発見した',       check:()=>FORMS.filter(f=>f.rar==='SP').every(f=>discovered.has(f.id))},
+  {id:'evo1',   icon:'✨',cks:10,   name:'初進化',           desc:'初めて進化した',               check:()=>maxStageEverReached>=1},
+  {id:'evo3',   icon:'✨',cks:30,   name:'Stage3到達',       desc:'Stage3まで進化した',           check:()=>maxStageEverReached>=3},
+  {id:'evo5',   icon:'✨',cks:100,  name:'Stage5到達',       desc:'Stage5まで進化した',           check:()=>maxStageEverReached>=5},
+  {id:'evo7',   icon:'✨',cks:300,  name:'Stage7到達',       desc:'Stage7まで進化した',           check:()=>maxStageEverReached>=7},
+  {id:'evo9',   icon:'🌈',cks:500,  name:'最終進化！',        desc:'Stage9レインボーちんに到達！', check:()=>maxStageEverReached>=9},
+  {id:'bwin1',  icon:'⚔️',cks:30,   name:'初勝利！',          desc:'NPC対戦で初めて勝った',        check:()=>battleWins>=1},
+  {id:'bwin5',  icon:'⚔️',cks:80,   name:'5回勝利',           desc:'NPC対戦で5回勝った',           check:()=>battleWins>=5},
+  {id:'bwin10', icon:'⚔️',cks:150,  name:'10回勝利',          desc:'NPC対戦で10回勝った',          check:()=>battleWins>=10},
+  {id:'bwin_all',icon:'🏆',cks:500, name:'全NPC制覇',         desc:'全8体のNPCに勝利した',         check:()=>npcBeaten.size>=NPCS.length},
+  {id:'rei1',   icon:'🔄',cks:200,  name:'初転生',            desc:'初めて転生した',               check:()=>reincarnations>=1},
+  {id:'rei3',   icon:'🔄',cks:400,  name:'3回転生',           desc:'3回転生した',                  check:()=>reincarnations>=3},
+  {id:'rei5',   icon:'🔄',cks:800,  name:'5回転生',           desc:'5回転生した猛者',              check:()=>reincarnations>=5},
+  {id:'rei10',  icon:'🔄',cks:2000, name:'10回転生',          desc:'転生を繰り返す求道者',         check:()=>reincarnations>=10},
+  {id:'acc1',   icon:'💍',cks:20,   name:'初装備',            desc:'初めてアクセサリーを装備した', check:()=>Object.values(equippedAcc).some(v=>v!==null)},
+  {id:'acc10',  icon:'💍',cks:100,  name:'アクセ10種',        desc:'アクセサリーを10種集めた',     check:()=>ownedAcc.size>=10},
+  {id:'acc_all',icon:'💍',cks:1000, name:'アクセコンプ',      desc:'全アクセサリーを集めた',       check:()=>ownedAcc.size>=ACCESSORIES.length},
+  {id:'auto_on',icon:'▶', cks:10,   name:'オート解禁',        desc:'オートぺちぺちをONにした',     check:()=>autoEverUsed},
+  {id:'shoot10',icon:'💦',cks:20,   name:'発射10回',          desc:'発射を10回した',               check:()=>totalShoots>=10},
+  {id:'shoot100',icon:'💦',cks:100, name:'発射100回',         desc:'発射を100回した',              check:()=>totalShoots>=100},
+  {id:'train10',icon:'💪',cks:50,   name:'訓練の達人',        desc:'訓練ポイントを10回割り振った', check:()=>totalTrainAllocs>=10},
+  {id:'train50',icon:'💪',cks:200,  name:'訓練マスター',      desc:'訓練ポイントを50回割り振った', check:()=>totalTrainAllocs>=50},
+];
+
+function checkAchievements(){
+  for(const ach of ACHIEVEMENTS){
+    if(achievDone.has(ach.id)) continue;
+    if(ach.check()){
+      achievDone.add(ach.id);
+      localStorage.setItem('chin_achiev',JSON.stringify([...achievDone]));
+      addCKS(ach.cks);
+      showAchievNotif(ach);
+    }
+  }
+}
+function showAchievNotif(ach){
+  const el=document.createElement('div');
+  el.className='achiev-notif';
+  el.innerHTML=`🏅 実績解除！ ${ach.icon} <b>${ach.name}</b><br><span style="font-size:.72rem;color:#ffaaff">+${ach.cks} CKS 獲得！</span>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3700);
+}
+
+// ── ショップ定義 ──
+const SHOP_OPTIONS=[
+  {id:'double_pechi',name:'ぺちぺち強化',icon:'👊',cat:'ぺちぺち強化',maxLvl:3,price:[300,600,1200],
+   desc:(l)=>l===0?'1クリックで2カウント！':`現在${l+1}カウント → 次Lvで${l+2}カウント`},
+  {id:'lucky_pechi', name:'ラッキーぺちぺち',icon:'🍀',cat:'ぺちぺち強化',maxLvl:1,price:[600],
+   desc:()=>'5%の確率でぺちぺちが3倍カウント！'},
+  {id:'auto_speed2', name:'高速オートLv2',icon:'⚡',cat:'オート強化',maxLvl:1,price:[200],
+   desc:()=>'オート選択に「高速(60ms)」を追加'},
+  {id:'auto_ultra',  name:'超高速オート',icon:'⚡⚡',cat:'オート強化',maxLvl:1,price:[500],requires:'auto_speed2',
+   desc:()=>'オート選択に「超高速(20ms)」を追加'},
+  {id:'train_boost', name:'訓練効率UP',icon:'💪',cat:'育成補助',maxLvl:2,price:[350,700],
+   desc:(l)=>l===0?'訓練ポイント獲得が2倍速':`現在${l+1}倍速 → 次Lvで${l+2}倍速`},
+  {id:'auto_evolve', name:'オート進化',icon:'✨',cat:'育成補助',maxLvl:1,price:[400],
+   desc:()=>'進化可能になると自動で進化する'},
+  {id:'cks_bonus',   name:'CKS獲得ボーナス',icon:'💰',cat:'CKS強化',maxLvl:3,price:[400,800,1600],
+   desc:(l)=>l===0?'CKS獲得量が1.5倍':`現在${1+l*0.5}倍 → 次Lvで${1+(l+1)*0.5}倍`},
+  {id:'slot2', name:'2体目スロット',icon:'➕',cat:'同時育成',maxLvl:1,price:[1000],
+   desc:()=>'2体目を自動育成！独自にステージが上がる'},
+  {id:'slot3', name:'3体目スロット',icon:'➕➕',cat:'同時育成',maxLvl:1,price:[3000],requires:'slot2',
+   desc:()=>'3体目を自動育成！（2体目スロット必要）'},
+];
+
+function buyShopOption(id){
+  const opt=SHOP_OPTIONS.find(o=>o.id===id); if(!opt) return;
+  const lvl=shopLvl(id);
+  if(lvl>=opt.maxLvl) return;
+  if(opt.requires&&!shopHas(opt.requires)){
+    showBanner('⚠ 先に「'+SHOP_OPTIONS.find(o=>o.id===opt.requires)?.name+'」を購入！'); return;
+  }
+  const price=opt.price[lvl];
+  if(cks<price){ showBanner(`⚠ CKSが足りません（必要: ${price} CKS）`); return; }
+  spendCKS(price);
+  shopLevels[id]=(shopLevels[id]||0)+1;
+  localStorage.setItem('chin_shop',JSON.stringify(shopLevels));
+  if(id==='auto_speed2') addAutoSpeedOption(60,'高速');
+  if(id==='auto_ultra')  addAutoSpeedOption(20,'超高速');
+  if(id==='slot2'||id==='slot3') initSubSlots();
+  showBanner(`✅ 「${opt.name}」を購入！`);
+  renderShopContent();
+}
+function addAutoSpeedOption(ms,label){
+  const sel=document.getElementById('speedSel');
+  for(const o of sel.options) if(+o.value===ms) return;
+  const opt=document.createElement('option'); opt.value=String(ms); opt.textContent=label;
+  sel.appendChild(opt);
+}
+
+let shopTab='shop';
+function switchShopTab(tab){
+  shopTab=tab;
+  document.getElementById('tabShop').classList.toggle('active',tab==='shop');
+  document.getElementById('tabAchiev').classList.toggle('active',tab==='achiev');
+  renderShopContent();
+}
+function renderShopContent(){
+  updateCKSDisplay();
+  const el=document.getElementById('shopContent'); if(!el) return;
+  if(shopTab==='shop'){
+    const cats=[...new Set(SHOP_OPTIONS.map(o=>o.cat))];
+    el.innerHTML=cats.map(cat=>{
+      return `<div class="shop-section">${cat}</div>`
+        +SHOP_OPTIONS.filter(o=>o.cat===cat).map(opt=>{
+          const lvl=shopLvl(opt.id), maxed=lvl>=opt.maxLvl;
+          const price=maxed?0:opt.price[lvl];
+          const canAfford=cks>=price, reqOk=!opt.requires||shopHas(opt.requires);
+          const reqTxt=opt.requires&&!reqOk
+            ?`<div style="font-size:.6rem;color:#aa6633">⚠ ${SHOP_OPTIONS.find(o=>o.id===opt.requires)?.name}が必要</div>`:'';
+          const lvlTxt=opt.maxLvl>1?`<span style="font-size:.6rem;color:#88ccff"> Lv${lvl}/${opt.maxLvl}</span>`:'';
+          return `<div class="shop-item">
+            <div class="shop-item-icon">${opt.icon}</div>
+            <div class="shop-item-info">
+              <div class="shop-item-name">${opt.name}${lvlTxt}</div>
+              <div class="shop-item-desc">${opt.desc(lvl)}</div>
+              ${reqTxt}
+              <div class="shop-item-price">${maxed?'✅ 購入済':'💰 '+price.toLocaleString()+' CKS'}</div>
+            </div>
+            <button class="shop-btn ${maxed?'shop-btn-done':'shop-btn-buy'}"
+              onclick="buyShopOption('${opt.id}')" ${maxed||!canAfford||!reqOk?'disabled':''}>
+              ${maxed?'済':'購入'}
+            </button>
+          </div>`;
+        }).join('');
+    }).join('');
+  } else {
+    const total=ACHIEVEMENTS.length, done=achievDone.size;
+    el.innerHTML=`<div style="font-size:.8rem;color:#cc8800;margin-bottom:.4rem;text-align:center">達成: ${done}/${total} 🏅</div>`
+      +ACHIEVEMENTS.map(ach=>{
+        const ok=achievDone.has(ach.id);
+        return `<div class="shop-item" style="${ok?'':'opacity:.55'}">
+          <div class="shop-item-icon">${ok?ach.icon:'❓'}</div>
+          <div class="shop-item-info">
+            <div class="shop-item-name" style="color:${ok?'#ffeecc':'#aa8844'}">${ok?ach.name:'???'}</div>
+            <div class="shop-item-desc">${ok?ach.desc:'まだ達成していない'}</div>
+            <div class="shop-item-price" style="color:${ok?'#88ff44':'#886600'}">${ok?'✅ +'+ach.cks+' CKS 獲得済':'🏅 +'+ach.cks+' CKS'}</div>
+          </div>
+        </div>`;
+      }).join('');
+  }
+}
+document.getElementById('btnShop').addEventListener('click',()=>{
+  renderShopContent();
+  document.getElementById('shopOverlay').classList.remove('hidden');
+});
+document.getElementById('shopClose').addEventListener('click',()=>
+  document.getElementById('shopOverlay').classList.add('hidden'));
+document.getElementById('shopOverlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('shopOverlay'))
+    document.getElementById('shopOverlay').classList.add('hidden');
+});
+
+// ── サブ育成スロット ──
+function initSubSlots(){
+  const target=(shopHas('slot2')?1:0)+(shopHas('slot3')?1:0);
+  while(subSlots.length<target){
+    const idx=subSlots.length;
+    const saved=JSON.parse(localStorage.getItem('chin_sub'+idx)||'null');
+    const form=saved?(FORMS.find(f=>f.id===saved.formId)||FORMS[0]):FORMS[0];
+    const slot={idx,count:saved?.count||0,stageIdx:saved?.stageIdx||0,form,timer:null};
+    subSlots.push(slot);
+    startSubSlot(slot);
+  }
+  renderSubSlots();
+}
+function saveSubSlot(slot){
+  localStorage.setItem('chin_sub'+slot.idx,JSON.stringify({count:slot.count,stageIdx:slot.stageIdx,formId:slot.form.id}));
+}
+function startSubSlot(slot){
+  if(slot.timer) clearInterval(slot.timer);
+  slot.timer=setInterval(()=>subSlotTick(slot),800);
+}
+function subSlotTick(slot){
+  slot.count++;
+  cksProgress++;
+  while(cksProgress>=CKS_PER_PECHI){ cksProgress-=CKS_PER_PECHI; addCKS(1); }
+  if(slot.stageIdx<9&&slot.count>=THRESHOLDS[slot.stageIdx+1]){
+    slot.stageIdx++;
+    slot.form=pickForm(slot.stageIdx);
+    discovered.add(slot.form.id);
+    saveAll();
+    addCKS(slot.stageIdx*20);
+    maxStageEverReached=Math.max(maxStageEverReached,slot.stageIdx);
+    localStorage.setItem('chin_maxstage',String(maxStageEverReached));
+    showBanner(`🔔 ${slot.idx+2}体目が進化！ ${slot.form.name}`);
+    checkAchievements();
+  }
+  saveSubSlot(slot);
+  renderSubSlots();
+}
+function renderSubSlots(){
+  const container=document.getElementById('subSlotArea');
+  if(!container||subSlots.length===0){ if(container) container.innerHTML=''; return; }
+  container.innerHTML=subSlots.map(slot=>{
+    const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
+    const base=THRESHOLDS[slot.stageIdx];
+    const pct=Math.min(100,(slot.count-base)/(next-base)*100);
+    const miniSvg=`<svg width="42" height="56" viewBox="0 0 130 280">${renderForm(slot.form)}</svg>`;
+    const label=slot.idx===0?'2体目':'3体目';
+    return `<div class="sub-slot">
+      ${miniSvg}
+      <div class="sub-slot-name">${label}: S${slot.stageIdx}</div>
+      <div class="sub-slot-info">${slot.form.name.slice(0,8)}</div>
+      <div style="width:78px;height:4px;background:rgba(255,100,180,.15);border-radius:2px;margin:.18rem auto">
+        <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#ff90c0,#ff2080);border-radius:2px;transition:width .3s"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ── 初期化 ──
 applyForm(FORMS[0],false);
 applyNickname();
 updateUI();
 updateTrainBadge();
+updateCKSDisplay();
+if(shopHas('auto_speed2')) addAutoSpeedOption(60,'高速');
+if(shopHas('auto_ultra'))  addAutoSpeedOption(20,'超高速');
+initSubSlots();
+checkAchievements();
 </script>
 </body>
 </html>
