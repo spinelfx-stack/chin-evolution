@@ -507,6 +507,7 @@ body{
       <button class="btn-admin-action" id="adminMaxTrain">💪 訓練+50pt</button>
       <button class="btn-admin-action" id="adminPechi1000">👆 +1000ぺちぺち</button>
       <button class="btn-admin-action" id="adminReincarn1">🔄 転生+1</button>
+      <button class="btn-admin-action" id="adminCks1000">💰 +1000 CKS</button>
     </div>
     <select class="admin-stage-sel" id="adminStageSel">
       <option value="">ステージ変更...</option>
@@ -1580,6 +1581,9 @@ document.getElementById('adminPechi1000').addEventListener('click',()=>{
 document.getElementById('adminReincarn1').addEventListener('click',()=>{
   reincarnBonusPct+=getTotalStats(currentForm)*0.01;
   reincarnations++; saveAll(); updateUI(); showBanner('🔄 転生+1！');
+});
+document.getElementById('adminCks1000').addEventListener('click',()=>{
+  cks+=1000; localStorage.setItem('chin_cks',String(cks)); updateCKSDisplay(); showBanner('💰 +1000 CKS！');
 });
 document.getElementById('adminStageSel').addEventListener('change',function(){
   const si=parseInt(this.value); if(isNaN(si)) return;
