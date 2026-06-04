@@ -285,22 +285,39 @@ body{
 .shop-btn-buy:hover{background:#ffaa00}
 .shop-btn-buy:disabled{background:#3a2200;color:#664400;cursor:not-allowed}
 .shop-btn-done{background:#224400;color:#88cc44;cursor:default}
-/* ── サブ育成スロット（1体目の隣に並べる） ── */
-.all-chars-area{display:flex;align-items:flex-end;justify-content:center;gap:6px;flex-wrap:wrap}
-.sub-stage{cursor:pointer;text-align:center;padding:.25rem .3rem;border-radius:12px;
-  transition:background .15s;user-select:none;touch-action:manipulation;
-  border:1.5px solid rgba(255,100,180,.2);background:rgba(255,100,180,.05)}
-.sub-stage:active{background:rgba(255,100,180,.18)}
-.sub-char{width:78px;height:106px;display:block;margin:0 auto;
-  filter:drop-shadow(0 4px 10px rgba(255,100,150,.28));transition:filter .3s}
-.sub-char.wiggle{animation:wiggle .5s ease}
-.sub-stage-info{font-size:.58rem;color:#cc88aa;margin-top:.12rem;text-align:center;font-weight:bold}
-.sub-stage-name{font-size:.5rem;color:#aa7799;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;max-width:82px;margin:0 auto .06rem}
-.sub-stage-prog{width:76px;height:4px;background:rgba(255,100,180,.15);border-radius:2px;
-  margin:0 auto .08rem;overflow:hidden}
-.sub-stage-prog-bar{height:100%;background:linear-gradient(90deg,#ff90c0,#ff2080);
-  border-radius:2px;transition:width .3s}
+/* ── 並列キャラ表示 ── */
+.all-chars-area{display:flex;align-items:flex-end;justify-content:center;gap:4px}
+/* サブキャラエリア（1体目と同じ大きさ・同じ操作感） */
+.sub-stage-area{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  height:262px;cursor:pointer;position:relative;
+  touch-action:manipulation;user-select:none
+}
+.sub-stage-area:active .sub-character{
+  filter:brightness(1.4) drop-shadow(0 7px 16px rgba(255,100,150,.55))
+}
+.sub-character{
+  width:158px;height:256px;transform-origin:bottom center;
+  filter:drop-shadow(0 7px 16px rgba(255,100,150,.35));transition:filter .4s
+}
+.sub-character.wiggle{animation:wiggle .5s ease}
+.sub-char-prog{width:158px;height:6px;background:rgba(255,100,180,.15);
+  border-radius:999px;overflow:hidden;margin-bottom:4px}
+.sub-char-prog-bar{height:100%;background:linear-gradient(90deg,#ff90c0,#ff2080);
+  border-radius:999px;transition:width .22s}
+.sub-char-info{font-size:.68rem;color:#cc88aa;text-align:center;margin-top:.15rem;font-weight:bold}
+.sub-char-label{font-size:.55rem;color:#aa7799;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:155px}
+/* 2体時: 全キャラを86%に縮小 */
+.all-chars-area.has-2 .stage-area{width:168px;height:225px}
+.all-chars-area.has-2 .sub-stage-area{width:168px;height:225px}
+.all-chars-area.has-2 .character,.all-chars-area.has-2 .sub-character{width:135px;height:220px}
+.all-chars-area.has-2 .sub-char-prog{width:135px}
+/* 3体時: 全キャラを57%に縮小 */
+.all-chars-area.has-3 .stage-area{width:111px;height:149px}
+.all-chars-area.has-3 .sub-stage-area{width:111px;height:149px}
+.all-chars-area.has-3 .character,.all-chars-area.has-3 .sub-character{width:89px;height:144px}
+.all-chars-area.has-3 .sub-char-prog{width:89px}
 /* ── モーダルヘッダー sticky（スクロールしても閉じるボタンが見えるように） ── */
 .acc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;
   position:sticky;top:0;z-index:2;background:#1a0820;padding-bottom:.3rem}
@@ -2503,41 +2520,54 @@ function subPechi(slot, x, y){
   saveSubSlot(slot);
   checkAchievements();
 }
-function updateSubDisplay(slot){
+function getSlotPct(slot){
   const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
   const base=THRESHOLDS[slot.stageIdx];
-  const pct=Math.min(100,(slot.count-base)/(next-base)*100);
-  const bar=document.getElementById('subBar'+slot.idx); if(bar) bar.style.width=pct.toFixed(1)+'%';
+  return Math.min(100,(slot.count-base)/(next-base)*100).toFixed(1);
+}
+function updateAllCharsClass(){
+  const area=document.getElementById('allCharsArea'); if(!area) return;
+  area.classList.remove('has-2','has-3');
+  if(subSlots.length===1) area.classList.add('has-2');
+  else if(subSlots.length>=2) area.classList.add('has-3');
+}
+function updateSubDisplay(slot){
+  const bar=document.getElementById('subBar'+slot.idx); if(bar) bar.style.width=getSlotPct(slot)+'%';
   const cnt=document.getElementById('subCnt'+slot.idx); if(cnt) cnt.textContent=slot.count+'回';
 }
-function rebuildSubStage(slot){
-  const existing=document.getElementById('subStage'+slot.idx);
-  const container=document.getElementById('allCharsArea');
-  if(!container) return;
-  const div=buildSubStageEl(slot);
-  if(existing) existing.replaceWith(div); else container.appendChild(div);
-}
 function buildSubStageEl(slot){
-  const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
-  const base=THRESHOLDS[slot.stageIdx];
-  const pct=Math.min(100,(slot.count-base)/(next-base)*100);
   const label=slot.idx===0?'2体目':'3体目';
   const div=document.createElement('div');
-  div.className='sub-stage'; div.id='subStage'+slot.idx;
+  div.className='sub-stage-area'; div.id='subStage'+slot.idx;
   div.innerHTML=`
-    <div class="sub-stage-prog"><div class="sub-stage-prog-bar" id="subBar${slot.idx}" style="width:${pct.toFixed(1)}%"></div></div>
-    <svg class="sub-char" id="subChar${slot.idx}" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${renderForm(slot.form)}</svg>
-    <div class="sub-stage-info" id="subCnt${slot.idx}">${slot.count}回</div>
-    <div class="sub-stage-name">${label} S${slot.stageIdx} ${slot.form.name.slice(0,6)}</div>`;
+    <div class="sub-char-prog"><div class="sub-char-prog-bar" id="subBar${slot.idx}" style="width:${getSlotPct(slot)}%"></div></div>
+    <svg class="sub-character" id="subChar${slot.idx}" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${renderForm(slot.form)}</svg>
+    <div class="sub-char-info" id="subCnt${slot.idx}">${slot.count}回</div>
+    <div class="sub-char-label">${label} S${slot.stageIdx} ${slot.form.name.slice(0,6)}</div>`;
   div.addEventListener('click',e=>subPechi(slot,e.clientX,e.clientY));
   div.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];subPechi(slot,t.clientX,t.clientY);},{passive:false});
   return div;
 }
+function rebuildSubStage(slot){
+  const existing=document.getElementById('subStage'+slot.idx);
+  const newEl=buildSubStageEl(slot);
+  if(existing) existing.replaceWith(newEl);
+  else renderSubSlots(); // 位置も含めて全再構築
+}
 function renderSubSlots(){
   const container=document.getElementById('allCharsArea'); if(!container) return;
-  // 既存のsubStageを全て削除
-  container.querySelectorAll('.sub-stage').forEach(e=>e.remove());
-  subSlots.forEach(slot=>container.appendChild(buildSubStageEl(slot)));
+  container.querySelectorAll('.sub-stage-area').forEach(e=>e.remove());
+  updateAllCharsClass();
+  if(subSlots.length===0) return;
+  const mainStage=document.getElementById('stageArea');
+  if(subSlots.length===1){
+    // 2体: 1体目(左) | 2体目(右)
+    container.appendChild(buildSubStageEl(subSlots[0]));
+  } else {
+    // 3体: 2体目(左) | 1体目(中央) | 3体目(右)
+    container.insertBefore(buildSubStageEl(subSlots[0]),mainStage);
+    container.appendChild(buildSubStageEl(subSlots[1]));
+  }
 }
 
 // ── 初期化 ──
