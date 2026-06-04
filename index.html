@@ -285,14 +285,37 @@ body{
 .shop-btn-buy:hover{background:#ffaa00}
 .shop-btn-buy:disabled{background:#3a2200;color:#664400;cursor:not-allowed}
 .shop-btn-done{background:#224400;color:#88cc44;cursor:default}
-/* ── サブ育成スロット ── */
-.sub-slots{display:flex;gap:.4rem;justify-content:center;margin-top:.3rem;flex-wrap:wrap}
-.sub-slot{background:rgba(255,100,180,.08);border:1.5px solid rgba(255,100,180,.22);
-  border-radius:12px;padding:.3rem .4rem;text-align:center;min-width:84px}
-.sub-slot svg{display:block;margin:0 auto}
-.sub-slot-name{font-size:.56rem;color:#cc88aa;margin-top:.1rem;font-weight:bold}
-.sub-slot-info{font-size:.5rem;color:#aa6688;margin-top:.03rem;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px}
+/* ── サブ育成スロット（1体目の隣に並べる） ── */
+.all-chars-area{display:flex;align-items:flex-end;justify-content:center;gap:6px;flex-wrap:wrap}
+.sub-stage{cursor:pointer;text-align:center;padding:.25rem .3rem;border-radius:12px;
+  transition:background .15s;user-select:none;touch-action:manipulation;
+  border:1.5px solid rgba(255,100,180,.2);background:rgba(255,100,180,.05)}
+.sub-stage:active{background:rgba(255,100,180,.18)}
+.sub-char{width:78px;height:106px;display:block;margin:0 auto;
+  filter:drop-shadow(0 4px 10px rgba(255,100,150,.28));transition:filter .3s}
+.sub-char.wiggle{animation:wiggle .5s ease}
+.sub-stage-info{font-size:.58rem;color:#cc88aa;margin-top:.12rem;text-align:center;font-weight:bold}
+.sub-stage-name{font-size:.5rem;color:#aa7799;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:82px;margin:0 auto .06rem}
+.sub-stage-prog{width:76px;height:4px;background:rgba(255,100,180,.15);border-radius:2px;
+  margin:0 auto .08rem;overflow:hidden}
+.sub-stage-prog-bar{height:100%;background:linear-gradient(90deg,#ff90c0,#ff2080);
+  border-radius:2px;transition:width .3s}
+/* ── モーダルヘッダー sticky（スクロールしても閉じるボタンが見えるように） ── */
+.acc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;
+  position:sticky;top:0;z-index:2;background:#1a0820;padding-bottom:.3rem}
+.sum-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;
+  position:sticky;top:0;z-index:2;background:#0a0a1a;padding-bottom:.3rem}
+.admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;
+  position:sticky;top:0;z-index:2;background:#1a0a00;padding-bottom:.3rem}
+.shop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;
+  position:sticky;top:0;z-index:2;background:#1a1000;padding-bottom:.3rem}
+.t-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;
+  position:sticky;top:0;z-index:2;background:#0a1a0a;padding-bottom:.3rem}
+.b-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;
+  position:sticky;top:0;z-index:2;background:#1a0a20;padding-bottom:.3rem}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;
+  position:sticky;top:0;z-index:2;background:#fff9fc;padding-bottom:.3rem}
 /* ── 転生ボーナス表示 ── */
 .reinc-bonus-row{font-size:.72rem;color:#ff8800;text-align:center;margin:.08rem 0;min-height:.9rem;font-weight:bold;letter-spacing:.02em}
 /* ── 全消去ボタン（左上・目立たない） ── */
@@ -375,11 +398,13 @@ body{
 <div class="next-info" id="nextInfo"></div>
 <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
 
-<!-- キャラクター -->
-<div class="stage-area" id="stageArea">
-  <svg class="character" id="character" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">
-    <g id="charG"></g>
-  </svg>
+<!-- キャラクター（複数体並べる） -->
+<div class="all-chars-area" id="allCharsArea">
+  <div class="stage-area" id="stageArea">
+    <svg class="character" id="character" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">
+      <g id="charG"></g>
+    </svg>
+  </div>
 </div>
 
 <!-- ステータス・カウント -->
@@ -417,8 +442,6 @@ body{
     <button class="icon-btn" id="btnSummary">📊<span class="ib-label">実績</span></button>
     <button class="icon-btn" id="btnShop">🛒<span class="ib-label">ショップ</span></button>
   </div>
-  <!-- サブ育成スロット -->
-  <div id="subSlotArea" class="sub-slots"></div>
   <!-- 転生（Stage6以上で表示） -->
   <div class="reincarn-compact hidden" id="reincarnRow">
     <button class="btn-reincarn-sm" id="btnReincarn">🔄 転生する</button>
@@ -431,7 +454,7 @@ body{
   <div class="acc-modal">
     <div class="acc-header">
       <div class="acc-title">💍 アクセサリー</div>
-      <button class="acc-close" id="accClose">✕</button>
+      <button class="acc-close" id="accClose" onclick="document.getElementById('accOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="acc-equipped-row" id="accEquippedRow"></div>
     <div class="acc-tabs" id="accTabs">
@@ -449,7 +472,7 @@ body{
   <div class="sum-modal">
     <div class="sum-header">
       <div class="sum-title">📊 サマリー</div>
-      <button class="modal-close" id="sumClose">✕</button>
+      <button class="modal-close" id="sumClose" onclick="document.getElementById('sumOverlay').classList.add('hidden')">✕</button>
     </div>
     <div id="sumBody"></div>
   </div>
@@ -460,7 +483,7 @@ body{
   <div class="admin-modal">
     <div class="admin-header">
       <div class="admin-title">🔧 管理者モード</div>
-      <button class="modal-close" id="adminClose" style="background:#2a1500;color:#ffaa66">✕</button>
+      <button class="modal-close" id="adminClose" style="background:#2a1500;color:#ffaa66" onclick="document.getElementById('adminOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="admin-grid">
       <button class="btn-admin-action" id="adminUnlockAll">📖 全フォーム解放</button>
@@ -489,7 +512,7 @@ body{
   <div class="shop-modal">
     <div class="shop-header">
       <div class="shop-title">💰 CKSショップ</div>
-      <button class="shop-close" id="shopClose">✕</button>
+      <button class="shop-close" id="shopClose" onclick="document.getElementById('shopOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="shop-cks" id="shopCksDisplay">💰 0 CKS 所持</div>
     <div class="shop-tabs">
@@ -509,7 +532,7 @@ body{
   <div class="t-modal">
     <div class="t-header">
       <div class="t-title">💪 トレーニング</div>
-      <button class="t-close" id="trainClose">✕</button>
+      <button class="t-close" id="trainClose" onclick="document.getElementById('trainOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="t-form-info" id="tFormInfo"></div>
     <div id="tPendingDiv" class="t-pending hidden"></div>
@@ -528,7 +551,7 @@ body{
   <div class="b-modal">
     <div class="b-header">
       <div class="b-title">⚔️ NPC対戦</div>
-      <button class="b-close" id="battleClose">✕</button>
+      <button class="b-close" id="battleClose" onclick="document.getElementById('battleOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="b-record" id="battleRecord"></div>
     <!-- NPC選択 -->
@@ -557,7 +580,7 @@ body{
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">📖 ちんちん図鑑</div>
-      <button class="modal-close" id="modalClose">✕</button>
+      <button class="modal-close" id="modalClose" onclick="document.getElementById('modalOverlay').classList.add('hidden')">✕</button>
     </div>
     <div class="zukan-count" id="zukanCount"></div>
     <div id="zukanBody"></div>
@@ -2418,7 +2441,7 @@ document.getElementById('shopOverlay').addEventListener('click',e=>{
     document.getElementById('shopOverlay').classList.add('hidden');
 });
 
-// ── サブ育成スロット ──
+// ── サブ育成スロット（1体目の隣に並べる・ぺちぺち可能） ──
 function initSubSlots(){
   const target=(shopHas('slot2')?1:0)+(shopHas('slot3')?1:0);
   while(subSlots.length<target){
@@ -2436,12 +2459,9 @@ function saveSubSlot(slot){
 }
 function startSubSlot(slot){
   if(slot.timer) clearInterval(slot.timer);
-  slot.timer=setInterval(()=>subSlotTick(slot),800);
+  slot.timer=setInterval(()=>subSlotTick(slot),1000);
 }
-function subSlotTick(slot){
-  slot.count++;
-  cksProgress++;
-  while(cksProgress>=CKS_PER_PECHI){ cksProgress-=CKS_PER_PECHI; addCKS(1); }
+function subSlotEvolveCheck(slot){
   if(slot.stageIdx<9&&slot.count>=THRESHOLDS[slot.stageIdx+1]){
     slot.stageIdx++;
     slot.form=pickForm(slot.stageIdx);
@@ -2452,28 +2472,72 @@ function subSlotTick(slot){
     localStorage.setItem('chin_maxstage',String(maxStageEverReached));
     showBanner(`🔔 ${slot.idx+2}体目が進化！ ${slot.form.name}`);
     checkAchievements();
+    rebuildSubStage(slot); // 外見を更新
+    return true;
   }
+  return false;
+}
+function subSlotTick(slot){
+  slot.count++;
+  cksProgress++;
+  while(cksProgress>=CKS_PER_PECHI){ cksProgress-=CKS_PER_PECHI; addCKS(1); }
+  if(!subSlotEvolveCheck(slot)) updateSubDisplay(slot);
   saveSubSlot(slot);
-  renderSubSlots();
+}
+function subPechi(slot, x, y){
+  // アニメーション
+  const svgEl=document.getElementById('subChar'+slot.idx);
+  if(svgEl){ svgEl.classList.remove('wiggle'); void svgEl.offsetWidth; svgEl.classList.add('wiggle'); svgEl.addEventListener('animationend',()=>svgEl.classList.remove('wiggle'),{once:true}); }
+  // エフェクト
+  const n=1+Math.floor(Math.random()*2);
+  for(let i=0;i<n;i++) setTimeout(()=>spawnText(x+(Math.random()-.5)*40,y),i*80);
+  // カウント（倍率あり）
+  const pMult=pechiCountMult();
+  let finalMult=pMult;
+  if(shopHas('lucky_pechi')&&Math.random()<0.05){ finalMult=pMult*3; spawnText(x,y-55); }
+  slot.count+=finalMult;
+  cksProgress++;
+  while(cksProgress>=CKS_PER_PECHI){ cksProgress-=CKS_PER_PECHI; addCKS(1); }
+  // 進化チェック
+  if(!subSlotEvolveCheck(slot)) updateSubDisplay(slot);
+  saveSubSlot(slot);
+  checkAchievements();
+}
+function updateSubDisplay(slot){
+  const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
+  const base=THRESHOLDS[slot.stageIdx];
+  const pct=Math.min(100,(slot.count-base)/(next-base)*100);
+  const bar=document.getElementById('subBar'+slot.idx); if(bar) bar.style.width=pct.toFixed(1)+'%';
+  const cnt=document.getElementById('subCnt'+slot.idx); if(cnt) cnt.textContent=slot.count+'回';
+}
+function rebuildSubStage(slot){
+  const existing=document.getElementById('subStage'+slot.idx);
+  const container=document.getElementById('allCharsArea');
+  if(!container) return;
+  const div=buildSubStageEl(slot);
+  if(existing) existing.replaceWith(div); else container.appendChild(div);
+}
+function buildSubStageEl(slot){
+  const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
+  const base=THRESHOLDS[slot.stageIdx];
+  const pct=Math.min(100,(slot.count-base)/(next-base)*100);
+  const label=slot.idx===0?'2体目':'3体目';
+  const div=document.createElement('div');
+  div.className='sub-stage'; div.id='subStage'+slot.idx;
+  div.innerHTML=`
+    <div class="sub-stage-prog"><div class="sub-stage-prog-bar" id="subBar${slot.idx}" style="width:${pct.toFixed(1)}%"></div></div>
+    <svg class="sub-char" id="subChar${slot.idx}" viewBox="0 0 130 280" xmlns="http://www.w3.org/2000/svg">${renderForm(slot.form)}</svg>
+    <div class="sub-stage-info" id="subCnt${slot.idx}">${slot.count}回</div>
+    <div class="sub-stage-name">${label} S${slot.stageIdx} ${slot.form.name.slice(0,6)}</div>`;
+  div.addEventListener('click',e=>subPechi(slot,e.clientX,e.clientY));
+  div.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];subPechi(slot,t.clientX,t.clientY);},{passive:false});
+  return div;
 }
 function renderSubSlots(){
-  const container=document.getElementById('subSlotArea');
-  if(!container||subSlots.length===0){ if(container) container.innerHTML=''; return; }
-  container.innerHTML=subSlots.map(slot=>{
-    const next=slot.stageIdx<9?THRESHOLDS[slot.stageIdx+1]:slot.count+1;
-    const base=THRESHOLDS[slot.stageIdx];
-    const pct=Math.min(100,(slot.count-base)/(next-base)*100);
-    const miniSvg=`<svg width="42" height="56" viewBox="0 0 130 280">${renderForm(slot.form)}</svg>`;
-    const label=slot.idx===0?'2体目':'3体目';
-    return `<div class="sub-slot">
-      ${miniSvg}
-      <div class="sub-slot-name">${label}: S${slot.stageIdx}</div>
-      <div class="sub-slot-info">${slot.form.name.slice(0,8)}</div>
-      <div style="width:78px;height:4px;background:rgba(255,100,180,.15);border-radius:2px;margin:.18rem auto">
-        <div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,#ff90c0,#ff2080);border-radius:2px;transition:width .3s"></div>
-      </div>
-    </div>`;
-  }).join('');
+  const container=document.getElementById('allCharsArea'); if(!container) return;
+  // 既存のsubStageを全て削除
+  container.querySelectorAll('.sub-stage').forEach(e=>e.remove());
+  subSlots.forEach(slot=>container.appendChild(buildSubStageEl(slot)));
 }
 
 // ── 初期化 ──
