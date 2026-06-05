@@ -1196,6 +1196,12 @@ function applyForm(f,withAnim){
     trainCount[oldId]=0; pendingPts[oldId]=0;
     localStorage.setItem('chin_tcount',JSON.stringify(trainCount));
     localStorage.setItem('chin_tpts',JSON.stringify(pendingPts));
+    // 割り振り済みの訓練ボーナスも引き継ぐ
+    if(!trainingBonus[f.id]) trainingBonus[f.id]={h:0,a:0,d:0,s:0,m:0};
+    const oldTb=trainingBonus[oldId]||{h:0,a:0,d:0,s:0,m:0};
+    for(const k of ['h','a','d','s','m']) trainingBonus[f.id][k]=(trainingBonus[f.id][k]||0)+oldTb[k];
+    trainingBonus[oldId]={h:0,a:0,d:0,s:0,m:0};
+    localStorage.setItem('chin_train',JSON.stringify(trainingBonus));
   }
   charG.innerHTML=renderForm(f)+renderEquippedAcc(f);
   if(withAnim){
